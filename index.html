@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sonai Masjid Pro - Direct Upload</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://static.filestackapi.com/filestack-js/3.x.x/filestack.min.js"></script>
+
+<style>
+:root{--green:#0b4627;--gold:#d4af37;--bg:#f8f9fa;--white:#ffffff;--red:#e63946;--blue:#3498db;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins',sans-serif;}
+body{background:var(--bg);color:#2d3436;padding-bottom:80px;}
+
+.hdr{background:linear-gradient(135deg,#062a18,#0b4627);padding:40px 20px;text-align:center;color:#fff;border-radius:0 0 40px 40px;}
+.hdr h1{font-family:'Amiri',serif;font-size:32px;}
+
+.nav{display:flex;margin:15px;background:#eee;border-radius:15px;padding:5px;gap:5px;overflow-x:auto;}
+.ntab{flex:1;padding:10px;text-align:center;font-size:11px;font-weight:700;border-radius:10px;cursor:pointer;border:none;background:transparent;white-space:nowrap;}
+.ntab.active{background:var(--white);color:var(--green);box-shadow:0 4px 10px rgba(0,0,0,0.1);}
+
+.ccard{background:var(--white);border-radius:20px;margin:15px;padding:20px;box-shadow:0 5px 15px rgba(0,0,0,0.05);position:relative;}
+input, select{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #ddd;font-size:14px;}
+.f-btn{width:100%;padding:14px;background:var(--green);color:white;border:none;border-radius:12px;font-weight:bold;cursor:pointer;margin-top:10px;}
+
+.qr-img{width:180px;height:180px;margin:10px auto;display:block;border-radius:10px;}
+#PREVIEW_IMG{width:100%; border-radius:10px; display:none; margin-top:10px;}
+.hidden{display:none !important;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.lbox{background:white;padding:30px;border-radius:25px;width:90%;max-width:350px;text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="OVL">
+  <div class="lbox">
+    <h2 style="font-family:'Amiri';font-size:28px;">Sonai Masjid</h2>
+    <input type="password" id="PIN" placeholder="Enter PIN" style="text-align:center;">
+    <button class="f-btn" onclick="doLogin()">🔐 Login</button>
+    <button style="background:none;border:none;margin-top:20px;color:var(--green);cursor:pointer;" onclick="doView()">👁️ Visitor View</button>
+  </div>
+</div>
+
+<div id="MAINAPP" class="hidden">
+    <div class="hdr">
+        <h1>Sonai Masjid</h1>
+        <div id="USER_INFO" style="font-size:11px;opacity:0.8;">Verification System Active</div>
+    </div>
+
+    <div class="nav">
+        <button class="ntab active" id="T0" onclick="showPage('HOME')">🏠 Home</button>
+        <button class="ntab" id="T2" onclick="showPage('DONATE')">💳 Donate</button>
+        <button class="ntab hidden admin-only" id="T3" onclick="showPage('VERIFY')">✅ Verify</button>
+        <button class="ntab hidden super-only" id="T4" onclick="showPage('SETTINGS')">⚙️ Settings</button>
+    </div>
+
+    <div id="HOME" class="pg">
+        <div id="LIST_AREA"></div>
+    </div>
+
+    <div id="DONATE" class="pg hidden">
+        <div class="ccard" style="text-align:center;">
+            <h3>Direct Donation</h3>
+            <img src="" id="QR_DISPLAY" class="qr-img">
+            <div id="BANK_DETAILS" style="font-size:12px; text-align:left; background:#f0f0f0; padding:10px; border-radius:10px;"></div>
+            
+            <hr style="margin:20px 0;">
+            <h4>Upload Payment Proof</h4>
+            <input type="text" id="U_NAME" placeholder="Your Full Name">
+            <input type="number" id="U_AMT" placeholder="Amount ₹">
+            <select id="U_CAMP"></select>
+            
+            <button class="f-btn" style="background:#555;" onclick="openPicker()">📸 Select Screenshot</button>
+            <img id="PREVIEW_IMG">
+            <input type="hidden" id="U_IMG_URL">
+            
+            <button class="f-btn" style="background:var(--blue);" onclick="submitPayment()">📤 Submit Payment</button>
+        </div>
+    </div>
+
+    <div id="VERIFY" class="pg hidden">
+        <div id="PENDING_LIST"></div>
+    </div>
+
+    <div id="SETTINGS" class="pg hidden">
+        <div class="ccard">
+            <h3>Admin & Payment Setup</h3>
+            <input type="text" id="SET_UPI" placeholder="UPI ID (e.g. 123@ybl)">
+            <input type="text" id="SET_BANK" placeholder="Bank Name">
+            <input type="text" id="SET_ACC" placeholder="A/C Number">
+            <input type="text" id="SET_IFSC" placeholder="IFSC Code">
+            <button class="f-btn" onclick="savePaySettings()">💾 Save Settings</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Firebase Config (Keep your existing one)
+const firebaseConfig = {
+  apiKey: "AIzaSyBELYt4Rfu5vmoJzR9hfxkbSEER4XErIoU",
+  authDomain: "sonai-masjid.firebaseapp.com",
+  projectId: "sonai-masjid",
+  storageBucket: "sonai-masjid.firebasestorage.app",
+  messagingSenderId: "680124332445",
+  appId: "1:680124332445:web:e5ce79dc635f971f035774"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Filestack Client (For Direct Uploads)
+const client = filestack.init('A8v0D5L4SiaWz9vW6p8Kgz'); // Free API Key
+
+let currentUser = { role: 'visitor' };
+
+function openPicker() {
+    client.picker({
+        accept: 'image/*',
+        maxFiles: 1,
+        onUploadDone: (res) => {
+            const url = res.filesUploaded[0].url;
+            document.getElementById('U_IMG_URL').value = url;
+            document.getElementById('PREVIEW_IMG').src = url;
+            document.getElementById('PREVIEW_IMG').style.display = 'block';
+            alert("Photo Selected!");
+        }
+    }).open();
+}
+
+async function doLogin() {
+    let pin = document.getElementById('PIN').value;
+    if(pin === "masjid786") {
+        currentUser = { role: 'super', name: 'Admin' };
+        document.querySelectorAll('.admin-only, .super-only').forEach(el => el.classList.remove('hidden'));
+        setupApp();
+    } else { alert("Wrong PIN"); }
+}
+
+function doView() { setupApp(); }
+
+function setupApp() {
+    document.getElementById('OVL').classList.add('hidden');
+    document.getElementById('MAINAPP').classList.remove('hidden');
+    loadData();
+}
+
+function loadData() {
+    db.collection("campaigns").onSnapshot(snap => {
+        let camps = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+        let h = camps.map(c => `<div class="ccard"><b>${c.name}</b></div>`).join('');
+        document.getElementById('LIST_AREA').innerHTML = h;
+        document.getElementById('U_CAMP').innerHTML = camps.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    });
+    renderVerifyList();
+    loadSettings();
+}
+
+async function submitPayment() {
+    let name = document.getElementById('U_NAME').value;
+    let amt = document.getElementById('U_AMT').value;
+    let img = document.getElementById('U_IMG_URL').value;
+    let campId = document.getElementById('U_CAMP').value;
+
+    if(!img) return alert("Pehle screenshot select karein!");
+
+    await db.collection("verifications").add({
+        name, amount: amt, img, campId, status: 'pending', time: Date.now()
+    });
+    alert("Payment submitted! Admin verify kareinge.");
+    showPage('HOME');
+}
+
+function renderVerifyList() {
+    db.collection("verifications").where("status", "==", "pending").onSnapshot(snap => {
+        let h = snap.docs.map(doc => {
+            let d = doc.data();
+            return `<div class="ccard">
+                <b>${d.name}</b> - ₹${d.amount}
+                <img src="${d.img}" style="width:100%; margin:10px 0;">
+                <button class="f-btn" onclick="approvePay('${doc.id}')">✅ Approve</button>
+            </div>`;
+        }).join('');
+        document.getElementById('PENDING_LIST').innerHTML = h || "No pending payments.";
+    });
+}
+
+async function approvePay(id) {
+    let snap = await db.collection("verifications").doc(id).get();
+    let data = snap.data();
+    let campRef = db.collection("campaigns").doc(data.campId);
+    let campSnap = await campRef.get();
+    let members = campSnap.data().members || [];
+    members.push({ name: data.name, amount: data.amount, paid: true, by: 'System' });
+    await campRef.update({ members });
+    await db.collection("verifications").doc(id).update({ status: 'approved' });
+    alert("Approved!");
+}
+
+function savePaySettings() {
+    let upi = document.getElementById('SET_UPI').value;
+    let bank = document.getElementById('SET_BANK').value;
+    let acc = document.getElementById('SET_ACC').value;
+    let ifsc = document.getElementById('SET_IFSC').value;
+    db.collection("settings").doc("payment").set({ upi, bank, acc, ifsc });
+    alert("Settings Saved!");
+}
+
+function loadSettings() {
+    db.collection("settings").doc("payment").onSnapshot(doc => {
+        if(doc.exists) {
+            let d = doc.data();
+            document.getElementById('QR_DISPLAY').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${d.upi}`;
+            document.getElementById('BANK_DETAILS').innerHTML = `Bank: ${d.bank}<br>A/C: ${d.acc}<br>IFSC: ${d.ifsc}`;
+        }
+    });
+}
+
+function showPage(p) {
+    document.querySelectorAll('.pg').forEach(el => el.classList.add('hidden'));
+    document.getElementById(p).classList.remove('hidden');
+}
+</script>
+</body>
+</html>
