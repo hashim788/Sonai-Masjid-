@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+
+<html lang="ur" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d4a1f">
+<title>Sonai Masjid — Collection Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Nastaliq+Urdu&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<style>
+/* ═══════════════════════════════════════
+   ROOT VARIABLES & RESET
+═══════════════════════════════════════ */
+:root {
+  --g1:#0a3015; --g2:#0f4a1f; --g3:#1a6b3a; --g4:#25a05a; --g5:#2ecc71;
+  --gold:#c9a84c; --gold2:#e8c86a; --gold3:#f5e09a;
+  --bg:#f0ede4; --card:#fffef9; --card2:#f8f6f0;
+  --text:#1a1a1a; --text2:#444; --muted:#666;
+  --border:#e0dcd0; --border2:#c8c4b8;
+  --paid:#1a6b3a; --pending:#c0392b; --pending-bg:#fdf0ee;
+  --shadow:0 4px 20px rgba(0,0,0,0.08);
+  --shadow2:0 8px 32px rgba(0,0,0,0.14);
+  --radius:16px; --radius2:12px; --radius3:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow-x:hidden;}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;}
+button{font-family:'Poppins',sans-serif;cursor:pointer;border:none;outline:none;}
+input,select,textarea{font-family:'Poppins',sans-serif;outline:none;}
+img{max-width:100%;display:block;}
+
+/* ═══════════════════════════════════════
+SPLASH SCREEN
+═══════════════════════════════════════ */
+#splash {
+position:fixed;inset:0;z-index:9999;
+background:linear-gradient(160deg,var(–g1) 0%,var(–g2) 40%,var(–g3) 100%);
+display:flex;flex-direction:column;align-items:center;justify-content:center;
+transition:opacity .6s ease;
+}
+#splash .splash-icon{font-size:72px;margin-bottom:20px;animation:pulse 2s infinite;}
+#splash .splash-bismillah{
+font-family:‘Amiri’,serif;font-size:22px;color:var(–gold2);
+text-align:center;margin-bottom:8px;letter-spacing:1px;
+}
+#splash h1{font-family:‘Amiri’,serif;font-size:36px;color:#fff;font-weight:700;text-align:center;margin-bottom:6px;}
+#splash p{color:rgba(255,255,255,.65);font-size:13px;margin-bottom:40px;}
+.splash-spinner{
+width:44px;height:44px;border:3px solid rgba(255,255,255,.2);
+border-top-color:var(–gold2);border-radius:50%;animation:spin .9s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+
+/* ═══════════════════════════════════════
+LOGIN OVERLAY
+═══════════════════════════════════════ */
+#loginOverlay{
+position:fixed;inset:0;z-index:999;
+background:rgba(0,0,0,.82);display:none;
+align-items:center;justify-content:center;backdrop-filter:blur(6px);
+}
+#loginOverlay.show{display:flex;}
+.login-card{
+background:var(–card);border-radius:24px;padding:36px 28px;
+width:92%;max-width:360px;text-align:center;
+box-shadow:0 24px 64px rgba(0,0,0,.4);
+animation:slideUp .3s ease;
+}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.login-card .lico{font-size:48px;margin-bottom:12px;}
+.login-card h2{font-family:‘Amiri’,serif;font-size:22px;color:var(–g3);margin-bottom:4px;}
+.login-card .bismillah-small{font-family:‘Amiri’,serif;color:var(–gold);font-size:14px;margin-bottom:16px;}
+.login-card p{color:var(–muted);font-size:12px;margin-bottom:20px;line-height:1.6;}
+.pin-input{
+width:100%;padding:14px;border:2px solid var(–border2);border-radius:var(–radius2);
+font-size:20px;text-align:center;letter-spacing:6px;background:var(–bg);
+transition:border-color .2s;margin-bottom:8px;color:var(–text);
+}
+.pin-input:focus{border-color:var(–g3);}
+.login-err{color:var(–pending);font-size:12px;margin-bottom:12px;display:none;}
+.btn-primary{
+width:100%;padding:14px;background:linear-gradient(135deg,var(–g3),var(–g1));
+color:#fff;border-radius:var(–radius2);font-size:14px;font-weight:700;
+margin-bottom:10px;transition:opacity .2s;
+}
+.btn-primary:active{opacity:.85;}
+.btn-ghost{
+width:100%;padding:12px;background:transparent;
+color:var(–muted);border:1.5px solid var(–border2);border-radius:var(–radius2);
+font-size:13px;font-weight:600;transition:all .2s;
+}
+.btn-ghost:active{background:var(–bg);}
+
+/* ═══════════════════════════════════════
+MAIN APP
+═══════════════════════════════════════ */
+#app{display:none;min-height:100vh;padding-bottom:80px;}
+#app.show{display:block;}
+
+/* HEADER */
+.app-header{
+background:linear-gradient(160deg,var(–g1) 0%,var(–g2) 50%,var(–g3) 100%);
+padding:20px 16px 28px;position:relative;overflow:hidden;
+}
+.app-header::before{
+content:’’;position:absolute;inset:0;
+background:radial-gradient(ellipse at 80% 20%, rgba(201,168,76,.15) 0%, transparent 60%);
+pointer-events:none;
+}
+.header-bismillah{
+font-family:‘Amiri’,serif;color:var(–gold2);font-size:15px;
+text-align:center;margin-bottom:8px;opacity:.9;
+}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.header-logo{display:flex;align-items:center;gap:10px;}
+.header-logo .ico{font-size:32px;}
+.header-logo h1{font-family:‘Amiri’,serif;font-size:22px;color:#fff;font-weight:700;line-height:1.2;}
+.header-logo p{color:rgba(255,255,255,.75);font-size:11px;}
+.header-badges{display:flex;gap:6px;flex-wrap:wrap;}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:20px;}
+.badge-gold{background:var(–gold);color:#1a1a1a;}
+.badge-live{background:#25D366;color:#fff;}
+.badge-mode{background:rgba(255,255,255,.2);color:#fff;}
+.badge-admin{background:rgba(201,168,76,.9);color:#1a1a1a;}
+
+/* GLOBAL STATS */
+.global-stats{
+display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;
+padding:0 16px;margin-top:-16px;position:relative;z-index:2;
+}
+.gstat{
+background:var(–card);border-radius:var(–radius2);padding:14px 8px;
+text-align:center;border:1px solid var(–border);box-shadow:var(–shadow);
+}
+.gstat .v{font-size:18px;font-weight:800;line-height:1;}
+.gstat .l{font-size:9.5px;color:var(–muted);margin-top:3px;font-weight:500;}
+.gstat.green .v{color:var(–g3);}
+.gstat.gold .v{color:#8a5f00;}
+.gstat.blue .v{color:#1a4a7a;}
+
+/* LIVE TICKER */
+.ticker-wrap{
+background:linear-gradient(90deg,var(–g1),var(–g2));
+padding:8px 0;overflow:hidden;margin:12px 0 0;
+}
+.ticker-inner{display:flex;gap:40px;animation:ticker 30s linear infinite;white-space:nowrap;}
+.ticker-item{display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.9);font-size:11.5px;font-weight:500;flex-shrink:0;}
+.ticker-item .dot{width:6px;height:6px;border-radius:50%;background:var(–gold2);flex-shrink:0;}
+@keyframes ticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* ═══════════════════════════════════════
+NAV BOTTOM — FIXED BLACK BOX REMOVED
+═══════════════════════════════════════ */
+.nav-bottom{
+position:fixed;bottom:0;left:0;right:0;z-index:100;
+background:#fff;
+border-top:1.5px solid var(–border);
+display:flex;
+padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+gap:4px;
+box-shadow:0 -2px 16px rgba(0,0,0,0.07);
+}
+.nav-btn{
+flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+gap:3px;padding:8px 4px;border-radius:var(–radius3);
+background:transparent;color:var(–muted);font-size:10px;font-weight:600;
+transition:all .2s;border:none;
+}
+.nav-btn .nico{font-size:20px;line-height:1;}
+.nav-btn.active{background:var(–g3);color:#fff;}
+.nav-btn.admin-only{display:none;}
+.nav-btn.admin-only.show{display:flex;}
+
+/* PAGES */
+.page{display:none;padding:16px 16px 0;animation:fadeIn .25s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* SECTION TITLE */
+.sec-title{
+font-size:13.5px;font-weight:700;color:var(–g3);
+display:flex;align-items:center;gap:6px;margin-bottom:12px;
+}
+.sec-title::after{content:’’;flex:1;height:1px;background:var(–border);}
+
+/* SEARCH BAR */
+.search-wrap{margin-bottom:14px;position:relative;}
+.search-input{
+width:100%;padding:12px 16px 12px 42px;
+border:1.5px solid var(–border2);border-radius:var(–radius);
+background:var(–card);font-size:13px;transition:border-color .2s;
+color:var(–text);
+}
+.search-input:focus{border-color:var(–g3);}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;color:var(–muted);}
+.search-input::placeholder{color:var(–muted);}
+
+/* CAMPAIGN CARDS */
+.camp-card{
+background:var(–card);border-radius:var(–radius);border:1px solid var(–border);
+margin-bottom:12px;overflow:hidden;box-shadow:var(–shadow);
+transition:transform .15s;
+}
+.camp-card:active{transform:scale(.99);}
+.camp-header{padding:14px 16px 10px;}
+.camp-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
+.camp-ico{
+width:46px;height:46px;border-radius:14px;flex-shrink:0;
+background:linear-gradient(135deg,var(–g3),var(–g1));
+display:flex;align-items:center;justify-content:center;font-size:22px;
+}
+.camp-info{flex:1;min-width:0;}
+.camp-name{font-size:15px;font-weight:700;color:var(–text);}
+.camp-desc{font-size:11.5px;color:var(–muted);margin-top:2px;}
+.camp-status{font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
+.camp-status.active{background:#d4edda;color:var(–paid);}
+.camp-status.inactive{background:#f0f0f0;color:var(–muted);}
+.camp-status.done{background:#e8e4d8;color:#555;}
+.prog-bar{height:8px;background:#e4e0d8;border-radius:10px;overflow:hidden;margin-bottom:5px;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(–g3),var(–gold));border-radius:10px;transition:width .6s ease;}
+.prog-label{display:flex;justify-content:space-between;font-size:10.5px;color:var(–muted);font-weight:500;}
+.camp-nums{display:flex;gap:6px;margin-top:10px;}
+.camp-num{flex:1;background:var(–bg);border-radius:var(–radius3);padding:8px 4px;text-align:center;}
+.camp-num .v{font-size:14px;font-weight:800;color:var(–g3);}
+.camp-num .l{font-size:9px;color:var(–muted);margin-top:1px;}
+.camp-actions{display:flex;gap:6px;padding:0 16px 14px;}
+.camp-btn{flex:1;padding:9px;border-radius:var(–radius3);font-size:12px;font-weight:700;transition:opacity .2s;}
+.camp-btn:active{opacity:.8;}
+.camp-btn.view{background:#e8f5ee;color:var(–g3);}
+.camp-btn.toggle{background:#fff3e0;color:#8a4500;}
+.camp-btn.del{background:#fdecea;color:var(–pending);}
+
+/* MEMBER CARDS */
+.member-filters{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;}
+.filter-btn{
+padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;
+white-space:nowrap;background:var(–card);color:var(–muted);border:1.5px solid var(–border2);
+transition:all .2s;flex-shrink:0;
+}
+.filter-btn.active{background:var(–g3);color:#fff;border-color:var(–g3);}
+.member-card{
+background:var(–card);border-radius:var(–radius2);border:1px solid var(–border);
+padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;
+box-shadow:var(–shadow);transition:all .2s;
+}
+.member-card.paid-card{border-left:3px solid var(–g3);}
+.member-card.pending-card{border-left:3px solid var(–pending);}
+.member-avatar{position:relative;flex-shrink:0;}
+.avatar-img{
+width:50px;height:50px;border-radius:50%;object-fit:cover;
+border:2px solid var(–border2);background:var(–bg);
+}
+.avatar-placeholder{
+width:50px;height:50px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+font-size:18px;font-weight:800;color:#fff;flex-shrink:0;
+}
+.status-dot{
+position:absolute;bottom:1px;right:1px;width:13px;height:13px;
+border-radius:50%;border:2px solid #fff;
+}
+.status-dot.paid{background:var(–g4);}
+.status-dot.pending{background:var(–pending);}
+.member-info{flex:1;min-width:0;}
+.member-name{font-size:13.5px;font-weight:700;color:var(–text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.member-phone{font-size:11px;color:var(–muted);margin-top:1px;}
+.member-amount{font-size:12px;font-weight:600;color:var(–text2);margin-top:2px;}
+.member-actions{display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
+.status-badge{
+padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;
+border:none;cursor:pointer;
+}
+.status-badge.paid{background:#d4edda;color:var(–paid);}
+.status-badge.pending{background:var(–pending-bg);color:var(–pending);}
+.status-badge:disabled{opacity:.6;cursor:default;}
+.edit-btn-small{
+padding:4px 10px;border-radius:10px;font-size:10.5px;font-weight:600;
+background:var(–bg);color:var(–text2);border:1px solid var(–border2);
+}
+.cam-btn{
+position:absolute;bottom:-2px;right:-2px;
+width:18px;height:18px;border-radius:50%;
+background:var(–g3);color:#fff;font-size:9px;
+display:flex;align-items:center;justify-content:center;
+border:2px solid #fff;
+}
+
+/* PAYMENT PROOF */
+.proof-card{
+background:#fff8e8;border-radius:var(–radius2);border:1.5px solid var(–gold);
+padding:12px;margin-bottom:8px;
+}
+.proof-status{
+display:inline-flex;align-items:center;gap:4px;
+padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:700;margin-bottom:8px;
+}
+.proof-status.pending-review{background:#fff3e0;color:#8a4500;}
+.proof-status.approved{background:#d4edda;color:var(–paid);}
+.proof-status.rejected{background:var(–pending-bg);color:var(–pending);}
+.proof-img{width:100%;max-height:200px;object-fit:cover;border-radius:var(–radius3);margin-top:8px;}
+.proof-actions{display:flex;gap:6px;margin-top:10px;}
+.approve-btn{flex:1;padding:9px;border-radius:var(–radius3);font-size:12px;font-weight:700;background:#d4edda;color:var(–paid);}
+.reject-btn{flex:1;padding:9px;border-radius:var(–radius3);font-size:12px;font-weight:700;background:var(–pending-bg);color:var(–pending);}
+
+/* FORMS */
+.form-box{
+background:var(–card);border-radius:var(–radius);border:1.5px dashed var(–g3);
+padding:16px;margin-bottom:14px;
+}
+.form-box.red{border-color:var(–pending);}
+.form-box h4{font-size:13px;font-weight:700;color:var(–g3);margin-bottom:12px;}
+.form-box.red h4{color:var(–pending);}
+.fi{
+width:100%;padding:11px 14px;border:1.5px solid var(–border2);border-radius:var(–radius3);
+font-size:13px;background:var(–bg);transition:border-color .2s;margin-bottom:8px;
+color:var(–text);
+}
+.fi:focus{border-color:var(–g3);}
+.fi option{color:var(–text);background:#fff;}
+.fi-row{display:flex;gap:8px;margin-bottom:8px;}
+.fi-row .fi{margin-bottom:0;}
+.submit-btn{
+width:100%;padding:13px;background:linear-gradient(135deg,var(–g3),var(–g1));
+color:#fff;border-radius:var(–radius3);font-size:13px;font-weight:700;
+margin-top:4px;transition:opacity .2s;
+}
+.submit-btn:active{opacity:.85;}
+.submit-btn.red{background:linear-gradient(135deg,var(–pending),#7b241c);}
+.submit-btn.gold{background:linear-gradient(135deg,var(–gold),#8a6010);}
+
+/* EXPENSE CARDS */
+.expense-card{
+background:var(–card);border-radius:var(–radius2);border:1px solid var(–border);
+border-left:3px solid var(–pending);padding:12px;margin-bottom:8px;
+}
+.expense-top{display:flex;gap:10px;align-items:flex-start;}
+.expense-img{width:56px;height:56px;border-radius:var(–radius3);object-fit:cover;flex-shrink:0;cursor:pointer;}
+.expense-ph{width:56px;height:56px;border-radius:var(–radius3);background:#fff0ee;border:1px solid #f0d0d0;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.expense-info{flex:1;}
+.expense-title{font-size:13px;font-weight:700;color:var(–text);}
+.expense-amount{font-size:14px;font-weight:800;color:var(–pending);margin-top:2px;}
+.expense-date{font-size:10.5px;color:var(–muted);margin-top:2px;}
+.expense-note{font-size:11.5px;color:var(–text2);margin-top:4px;line-height:1.5;}
+.del-btn{background:none;border:none;color:var(–pending);font-size:18px;padding:0 4px;}
+
+/* PAYMENT / DONATE SECTION */
+.donate-card{
+background:linear-gradient(135deg,var(–g1),var(–g2));
+border-radius:var(–radius);padding:20px;margin-bottom:14px;color:#fff;
+}
+.donate-card h3{font-family:‘Amiri’,serif;font-size:18px;margin-bottom:4px;color:var(–gold2);}
+.donate-card p{font-size:12px;opacity:.85;margin-bottom:16px;color:rgba(255,255,255,.85);}
+.upi-box{background:rgba(255,255,255,.12);border-radius:var(–radius2);padding:14px;margin-bottom:12px;border:1px solid rgba(255,255,255,.15);}
+.upi-label{font-size:10.5px;opacity:.8;font-weight:600;margin-bottom:4px;color:rgba(255,255,255,.8);}
+.upi-value{font-size:15px;font-weight:700;color:var(–gold2);}
+.qr-placeholder{
+background:var(–card);border-radius:var(–radius2);padding:20px;
+text-align:center;color:var(–muted);font-size:13px;
+}
+
+/* RECENT PAYMENTS */
+.recent-item{
+display:flex;align-items:center;gap:10px;
+background:var(–card);border-radius:var(–radius2);padding:10px 12px;
+margin-bottom:8px;border:1px solid var(–border);
+}
+.recent-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(–g3),var(–g4));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0;}
+.recent-info{flex:1;}
+.recent-name{font-size:13px;font-weight:600;color:var(–text);}
+.recent-time{font-size:10.5px;color:var(–muted);}
+.recent-amount{font-size:14px;font-weight:800;color:var(–g3);}
+
+/* ADMIN ROLES */
+.role-card{
+background:var(–card);border-radius:var(–radius2);border:1px solid var(–border);
+padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;
+}
+.role-ico{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(–gold),#8a6010);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.role-info{flex:1;}
+.role-name{font-size:13.5px;font-weight:700;color:var(–text);}
+.role-level{font-size:11px;color:var(–muted);}
+.role-del{background:var(–pending-bg);color:var(–pending);border-radius:var(–radius3);padding:6px 12px;font-size:11.5px;font-weight:700;}
+
+/* MODAL */
+.modal-overlay{
+position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.75);
+display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);
+}
+.modal-overlay.show{display:flex;}
+.modal-box{
+background:var(–card);border-radius:var(–radius);padding:24px 20px;
+width:94%;max-width:420px;max-height:90vh;overflow-y:auto;
+box-shadow:var(–shadow2);animation:slideUp .3s ease;
+}
+.modal-title{font-size:16px;font-weight:700;color:var(–g3);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.modal-close{background:var(–bg);border:none;border-radius:50%;width:30px;height:30px;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(–muted);}
+
+/* IMAGE FULLSCREEN */
+.img-modal{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;}
+.img-modal.show{display:flex;}
+.img-modal img{max-width:96vw;max-height:90vh;border-radius:var(–radius2);}
+.img-modal-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:50%;width:38px;height:38px;font-size:20px;display:flex;align-items:center;justify-content:center;}
+
+/* TOAST */
+.toast{
+position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(60px);
+background:#1a1a1a;color:#fff;padding:10px 22px;border-radius:30px;
+font-size:13px;font-weight:600;z-index:999;transition:transform .3s ease;white-space:nowrap;
+box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* SAVE INDICATOR */
+.save-ind{
+position:fixed;top:12px;right:14px;z-index:200;
+background:var(–g3);color:#fff;padding:5px 14px;
+border-radius:20px;font-size:11px;font-weight:600;
+opacity:0;transition:opacity .3s;
+}
+.save-ind.show{opacity:1;}
+
+/* SUMMARY BOX */
+.summary-box{
+background:linear-gradient(135deg,var(–g2),var(–g1));
+border-radius:var(–radius);padding:16px;margin-bottom:14px;color:#fff;
+display:flex;justify-content:space-between;
+}
+.summary-item{text-align:center;}
+.summary-item .sv{font-size:18px;font-weight:800;color:#fff;}
+.summary-item .sl{font-size:9.5px;opacity:.8;margin-top:2px;color:rgba(255,255,255,.8);}
+.summary-item .sv.gold{color:var(–gold2);}
+.summary-item .sv.red{color:#f5a89a;}
+
+/* MISC */
+.empty-state{text-align:center;padding:40px 20px;color:var(–muted);}
+.empty-state .eico{font-size:48px;margin-bottom:12px;}
+.empty-state p{font-size:13px;}
+.divider{height:1px;background:var(–border);margin:16px 0;}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.chip.green{background:#d4edda;color:var(–paid);}
+.chip.red{background:var(–pending-bg);color:var(–pending);}
+.chip.gold{background:#fef9e7;color:#7a5800;}
+
+/* File input hidden */
+.file-hidden{display:none;}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(–border2);border-radius:4px;}
+
+/* Back button */
+.back-btn{display:flex;align-items:center;gap:6px;color:var(–g3);font-size:13px;font-weight:600;background:none;border:none;padding:8px 0;margin-bottom:12px;}
+
+/* Checkbox labels */
+label input[type=“checkbox”]{accent-color:var(–g3);}
+</style>
+
+</head>
+<body>
+
+<!-- SPLASH -->
+
+<div id="splash">
+  <div class="splash-icon">🕌</div>
+  <div class="splash-bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+  <h1>Sonai Masjid</h1>
+  <p>Campaign & Collection Manager</p>
+  <div class="splash-spinner"></div>
+</div>
+
+<!-- LOGIN -->
+
+<div id="loginOverlay">
+  <div class="login-card">
+    <div class="lico">🕌</div>
+    <div class="bismillah-small">بِسْمِ اللَّهِ</div>
+    <h2>Sonai Masjid</h2>
+    <p>Admin ho to PIN daalo.<br>Dekhne ke liye neeche click karo.</p>
+    <input type="password" class="pin-input" id="pinInput" placeholder="••••••" maxlength="10" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <div class="login-err" id="loginErr">❌ Galat PIN! Dobara try karo.</div>
+    <button class="btn-primary" onclick="doLogin()">🔐 Admin Login</button>
+    <button class="btn-ghost" onclick="doView()">👁️ Sirf Dekhna Hai</button>
+  </div>
+</div>
+
+<!-- IMAGE MODAL -->
+
+<div class="img-modal" id="imgModal" onclick="closeImgModal()">
+  <button class="img-modal-close">✕</button>
+  <img id="imgModalSrc" src="" alt="">
+</div>
+
+<!-- EDIT MEMBER MODAL -->
+
+<div class="modal-overlay" id="editMemberModal">
+  <div class="modal-box">
+    <div class="modal-title">
+      ✏️ Member Edit Karo
+      <button class="modal-close" onclick="closeModal('editMemberModal')">✕</button>
+    </div>
+    <input class="fi" type="text" id="editMName" placeholder="Naam"/>
+    <input class="fi" type="tel" id="editMPhone" placeholder="Phone Number (10 digits)"/>
+    <input class="fi" type="number" id="editMAmount" placeholder="Amount ₹"/>
+    <input class="fi" type="hidden" id="editMCampId"/>
+    <input class="fi" type="hidden" id="editMIdx"/>
+    <button class="submit-btn" onclick="saveMemberEdit()">✅ Save Karo</button>
+  </div>
+</div>
+
+<!-- PROOF SUBMIT MODAL -->
+
+<div class="modal-overlay" id="proofModal">
+  <div class="modal-box">
+    <div class="modal-title">
+      📤 Payment Proof Bhejo
+      <button class="modal-close" onclick="closeModal('proofModal')">✕</button>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Admin approve karne ke baad aapka status update hoga.</p>
+    <input class="fi" type="text" id="proofName" placeholder="Aapka Naam *"/>
+    <input class="fi" type="tel" id="proofPhone" placeholder="Phone Number *"/>
+    <input class="fi" type="number" id="proofAmount" placeholder="Amount Jo Diya ₹ *"/>
+    <select class="fi" id="proofCampId"></select>
+    <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">📷 Payment Screenshot *</label>
+    <input type="file" accept="image/*" class="file-hidden" id="proofImgInput" onchange="handleProofImg(this)"/>
+    <div id="proofImgPreview" style="margin-bottom:10px;"></div>
+    <button class="submit-btn gold" onclick="openFile('proofImgInput')">📷 Screenshot Select Karo</button>
+    <button class="submit-btn" onclick="submitProof()" style="margin-top:8px;">📤 Submit Karo</button>
+  </div>
+</div>
+
+<!-- ADD CAMPAIGN MODAL -->
+
+<div class="modal-overlay" id="addCampModal">
+  <div class="modal-box">
+    <div class="modal-title">
+      🆕 Naya Campaign
+      <button class="modal-close" onclick="closeModal('addCampModal')">✕</button>
+    </div>
+    <input class="fi" type="text" id="ncName" placeholder="Campaign Naam *"/>
+    <input class="fi" type="text" id="ncDesc" placeholder="Description (optional)"/>
+    <input class="fi" type="number" id="ncTarget" placeholder="Target Amount ₹ (optional)"/>
+    <div class="fi-row">
+      <select class="fi" id="ncIcon" style="margin-bottom:0;">
+        <option value="🕌">🕌 Masjid</option>
+        <option value="💡">💡 Bijli/Fan</option>
+        <option value="🪑">🪑 Furniture</option>
+        <option value="🧹">🧹 Safai</option>
+        <option value="🔧">🔧 Repair</option>
+        <option value="📚">📚 Madrasa</option>
+        <option value="🎁">🎁 Other</option>
+      </select>
+      <select class="fi" id="ncStatus" style="margin-bottom:0;">
+        <option value="active">🟢 Active</option>
+        <option value="done">✅ Done</option>
+      </select>
+    </div>
+    <button class="submit-btn" onclick="createCampaign()" style="margin-top:6px;">✅ Banao</button>
+  </div>
+</div>
+
+<!-- ADD MEMBER MODAL -->
+
+<div class="modal-overlay" id="addMemberModal">
+  <div class="modal-box">
+    <div class="modal-title">
+      👤 Naya Member
+      <button class="modal-close" onclick="closeModal('addMemberModal')">✕</button>
+    </div>
+    <input class="fi" type="text" id="nmName" placeholder="Naam *"/>
+    <input class="fi" type="tel" id="nmPhone" placeholder="Phone Number"/>
+    <select class="fi" id="nmAmount">
+      <option value="500">₹500</option>
+      <option value="1000">₹1000</option>
+      <option value="200">₹200</option>
+      <option value="100">₹100</option>
+    </select>
+    <button class="submit-btn" onclick="addMember()">➕ Add Karo</button>
+  </div>
+</div>
+
+<!-- ADD ADMIN ROLE MODAL -->
+
+<div class="modal-overlay" id="addRoleModal">
+  <div class="modal-box">
+    <div class="modal-title">
+      👑 Sub-Admin Add Karo
+      <button class="modal-close" onclick="closeModal('addRoleModal')">✕</button>
+    </div>
+    <input class="fi" type="text" id="roleName" placeholder="Naam *"/>
+    <input class="fi" type="text" id="rolePin" placeholder="Custom PIN *" maxlength="10"/>
+    <div style="margin-bottom:8px;">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:8px;">Access Level:</label>
+      <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--text);"><input type="checkbox" id="rCanView" checked> Dekh sakta hai</label>
+      <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--text);"><input type="checkbox" id="rCanPaid"> Payment mark kar sakta hai</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);"><input type="checkbox" id="rCanApprove"> Proof approve kar sakta hai</label>
+    </div>
+    <button class="submit-btn gold" onclick="addAdminRole()">✅ Add Karo</button>
+  </div>
+</div>
+
+<!-- SAVE INDICATOR & TOAST -->
+
+<div class="save-ind" id="saveInd">☁️ Saved!</div>
+<div class="toast" id="toast"></div>
+
+<!-- MAIN APP -->
+
+<div id="app">
+
+  <!-- HEADER -->
+
+  <div class="app-header">
+    <div class="header-bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+    <div class="header-top">
+      <div class="header-logo">
+        <span class="ico">🕌</span>
+        <div>
+          <h1>Sonai Masjid</h1>
+          <p>Collection Manager</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        <span class="badge badge-live">🔴 Live</span>
+        <span class="badge badge-mode" id="modeBadge">👁️ View</span>
+      </div>
+    </div>
+    <div class="header-badges" id="headerBadges"></div>
+  </div>
+
+  <!-- GLOBAL STATS -->
+
+  <div class="global-stats" id="globalStats"></div>
+
+  <!-- TICKER -->
+
+  <div class="ticker-wrap" id="tickerWrap" style="display:none;">
+    <div class="ticker-inner" id="tickerInner"></div>
+  </div>
+
+  <!-- NAV BOTTOM -->
+
+  <div class="nav-bottom">
+    <button class="nav-btn active" id="nav0" onclick="goPage(0)"><span class="nico">🏠</span>Home</button>
+    <button class="nav-btn" id="nav1" onclick="goPage(1)"><span class="nico">📋</span>Campaigns</button>
+    <button class="nav-btn" id="nav2" onclick="goPage(2)"><span class="nico">💳</span>Payment</button>
+    <button class="nav-btn admin-only" id="nav3" onclick="goPage(3)"><span class="nico">💸</span>Kharcha</button>
+    <button class="nav-btn admin-only" id="nav4" onclick="goPage(4)"><span class="nico">👑</span>Admin</button>
+  </div>
+
+  <!-- PAGE 0: HOME -->
+
+  <div class="page active" id="page0">
+    <div style="height:16px;"></div>
+    <div class="sec-title">🔍 Global Search</div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="search" class="search-input" id="globalSearch" placeholder="Naam ya number se dhundho..." oninput="doGlobalSearch(this.value)"/>
+    </div>
+    <div id="globalSearchResults" style="display:none;margin-bottom:14px;"></div>
+    <div class="sec-title">📊 Sab Campaigns</div>
+    <div id="homeCampList"></div>
+    <div class="sec-title">🕐 Recent Payments</div>
+    <div id="recentPayments"></div>
+  </div>
+
+  <!-- PAGE 1: CAMPAIGNS -->
+
+  <div class="page" id="page1">
+    <div style="height:16px;"></div>
+    <div id="campListView">
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="submit-btn admin-only" style="flex:1;margin-top:0;" onclick="showModal('addCampModal')">➕ Naya Campaign</button>
+      </div>
+      <div id="campList"></div>
+    </div>
+    <div id="campDetailView" style="display:none;">
+      <button class="back-btn" onclick="backToCampList()">← Wapas</button>
+      <div id="campDetailHeader"></div>
+      <div class="search-wrap" style="margin-top:12px;">
+        <span class="search-icon">🔍</span>
+        <input type="search" class="search-input" id="campSearch" placeholder="Is campaign mein dhundho..." oninput="doCampSearch(this.value)"/>
+      </div>
+      <div class="member-filters">
+        <button class="filter-btn active" id="mf0" onclick="setMemberFilter(0)">Sab</button>
+        <button class="filter-btn" id="mf1" onclick="setMemberFilter(1)">✅ Paid</button>
+        <button class="filter-btn" id="mf2" onclick="setMemberFilter(2)">⏳ Pending</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button class="submit-btn admin-only" style="flex:1;margin-top:0;padding:10px;" onclick="showModal('addMemberModal')">➕ Member Add</button>
+      </div>
+      <div id="memberList"></div>
+      <div class="sec-title" style="margin-top:8px;">📤 Payment Proofs</div>
+      <div id="proofList"></div>
+      <div class="sec-title">📲 WhatsApp Messages</div>
+      <div id="waMessages"></div>
+    </div>
+  </div>
+
+  <!-- PAGE 2: PAYMENT -->
+
+  <div class="page" id="page2">
+    <div style="height:16px;"></div>
+    <div class="donate-card">
+      <h3>💳 Payment Karo</h3>
+      <p>QR code scan karo ya UPI se seedha bhejo</p>
+      <div class="upi-box">
+        <div class="upi-label">UPI ID</div>
+        <div class="upi-value" id="upiDisplay">7451908711@paytm</div>
+      </div>
+      <div class="upi-box">
+        <div class="upi-label">Phone Number</div>
+        <div class="upi-value">📞 7451908711</div>
+      </div>
+      <div class="qr-placeholder" id="qrSection">
+        <div style="font-size:40px;margin-bottom:8px;">📱</div>
+        <p>QR Code yahan dikhega</p>
+        <p style="font-size:11px;margin-top:4px;color:var(--muted);">Admin QR code upload kar sakta hai</p>
+        <button class="submit-btn admin-only" style="margin-top:12px;" onclick="document.getElementById('qrUpload').click()">📷 QR Upload Karo</button>
+        <input type="file" accept="image/*" class="file-hidden" id="qrUpload" onchange="uploadQR(this)"/>
+      </div>
+    </div>
+    <div class="sec-title">📤 Payment Proof Bhejo</div>
+    <div class="form-box">
+      <h4>📷 Screenshot ke saath proof do</h4>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Payment karne ke baad yahan proof submit karo. Admin approve karega.</p>
+      <button class="submit-btn gold" onclick="openProofModal()">📤 Payment Proof Submit Karo</button>
+    </div>
+    <div class="sec-title admin-only">⚙️ Payment Settings</div>
+    <div class="form-box admin-only">
+      <h4>UPI / Phone Update Karo</h4>
+      <input class="fi" type="text" id="settingsUpi" placeholder="UPI ID"/>
+      <button class="submit-btn" onclick="saveSettings()">💾 Save Karo</button>
+    </div>
+  </div>
+
+  <!-- PAGE 3: KHARCHA -->
+
+  <div class="page" id="page3">
+    <div style="height:16px;"></div>
+    <div id="expenseSummary"></div>
+    <div class="sec-title">➕ Naya Kharcha</div>
+    <div class="form-box red">
+      <h4>💸 Kharcha Add Karo</h4>
+      <input class="fi" type="text" id="exDesc" placeholder="Kharcha kya tha? *"/>
+      <input class="fi" type="number" id="exAmount" placeholder="Amount ₹ *"/>
+      <input class="fi" type="text" id="exNote" placeholder="Note (optional)"/>
+      <select class="fi" id="exCampId"></select>
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;">📷 Receipt Photo (optional)</label>
+      <input type="file" accept="image/*" class="file-hidden" id="exPhotoInput" onchange="handleExPhoto(this)"/>
+      <div id="exPhotoPreview" style="margin-bottom:8px;"></div>
+      <button class="submit-btn gold" onclick="openFile('exPhotoInput')" style="margin-bottom:8px;">📷 Photo Select Karo</button>
+      <button class="submit-btn red" onclick="addExpense()">💸 Add Karo</button>
+    </div>
+    <div class="sec-title">📋 Sab Kharche</div>
+    <div id="expenseList"></div>
+  </div>
+
+  <!-- PAGE 4: ADMIN -->
+
+  <div class="page" id="page4">
+    <div style="height:16px;"></div>
+    <div class="sec-title">👑 Admin Panel</div>
+    <div class="form-box" style="margin-bottom:14px;">
+      <h4>📤 Payment Proofs (Pending Approval)</h4>
+      <div id="adminProofList"></div>
+    </div>
+    <div class="sec-title">👥 Sub-Admins</div>
+    <div style="margin-bottom:10px;">
+      <button class="submit-btn" style="width:auto;padding:10px 20px;" onclick="showModal('addRoleModal')">➕ Sub-Admin Add</button>
+    </div>
+    <div id="roleList"></div>
+    <div class="sec-title">🔥 Firebase Status</div>
+    <div class="form-box">
+      <div id="firebaseStatus" style="font-size:13px;color:var(--g3);">✅ Firebase Connected — Data Live Sync Ho Raha Hai</div>
+    </div>
+    <div class="sec-title">🚪 Logout</div>
+    <button class="submit-btn red" onclick="doLogout()">🚪 Admin Logout</button>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+'use strict';
+var FB_CFG = {
+  apiKey:"AIzaSyBELYt4Rfu5vmoJzR9hfxkbSEER4XErIoU",
+  authDomain:"sonai-masjid.firebaseapp.com",
+  projectId:"sonai-masjid",
+  storageBucket:"sonai-masjid.firebasestorage.app",
+  messagingSenderId:"680124332445",
+  appId:"1:680124332445:web:e5ce79dc635f971f035774"
+};
+firebase.initializeApp(FB_CFG);
+var db = firebase.firestore();
+
+var ADMIN_PIN = 'masjid786';
+var state = {
+  isAdmin:false, isSubAdmin:false, subAdminPerms:{},
+  curPage:0, curCampId:null, memberFilter:0,
+  campSearch:'', globalSearch:'',
+  campaigns:[], expenses:[], proofs:[], roles:[], recentPayments:[],
+  settings:{upi:'7451908711@paytm', qr:''},
+  exPhotoData:'', proofImgData:''
+};
+
+window.onload = function() {
+  setTimeout(function() {
+    document.getElementById('splash').style.opacity = '0';
+    setTimeout(function() {
+      document.getElementById('splash').style.display = 'none';
+      document.getElementById('loginOverlay').classList.add('show');
+    }, 600);
+  }, 2200);
+  loadSettings();
+  startFirebaseListeners();
+};
+
+function startFirebaseListeners() {
+  db.collection('campaigns').orderBy('createdAt','desc').onSnapshot(function(snap) {
+    state.campaigns = [];
+    var needsSeed = snap.empty;
+    snap.forEach(function(doc) { var d=doc.data(); d.id=doc.id; state.campaigns.push(d); });
+    if(needsSeed) seedDefaultData();
+    else renderAll();
+  });
+  db.collection('expenses').orderBy('createdAt','desc').onSnapshot(function(snap) {
+    state.expenses = [];
+    snap.forEach(function(doc) { var d=doc.data(); d.id=doc.id; state.expenses.push(d); });
+    renderExpenses(); renderExpenseSummary();
+  });
+  db.collection('proofs').orderBy('createdAt','desc').onSnapshot(function(snap) {
+    state.proofs = [];
+    snap.forEach(function(doc) { var d=doc.data(); d.id=doc.id; state.proofs.push(d); });
+    renderProofs(); renderAdminProofs();
+  });
+  db.collection('roles').onSnapshot(function(snap) {
+    state.roles = [];
+    snap.forEach(function(doc) { var d=doc.data(); d.id=doc.id; state.roles.push(d); });
+    renderRoles();
+  });
+  db.collection('settings').doc('main').onSnapshot(function(doc) {
+    if(doc.exists) {
+      state.settings = doc.data();
+      document.getElementById('upiDisplay').textContent = state.settings.upi || '7451908711@paytm';
+      if(state.settings.qr) renderQR(state.settings.qr);
+    }
+  });
+}
+
+function seedDefaultData() {
+  var defaultMembers = [
+    {name:'Akram Bhai (Sabji Wale)',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Aman Bhai',phone:'',amount:1000,paid:false,paidAt:null,photo:''},
+    {name:'Annu Bhai',phone:'',amount:500,paid:true,paidAt:new Date().toISOString(),photo:''},
+    {name:'Ashif Bhai (Mungfali Wale)',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Ashif Bhai',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Aship Bhai (Kalua)',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Aslam Bhai',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Ayan Bhai',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Bilal Bhai',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Danish Bhai',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Dilshad Bhai',phone:'',amount:500,paid:true,paidAt:new Date().toISOString(),photo:''},
+    {name:'Erfan Bhai',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Faizan Pahalwan',phone:'',amount:1000,paid:false,paidAt:null,photo:''},
+    {name:'Faizan (Abba)',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Furkan Bhai (Nattha)',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Intu Pahalwan',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Irshad Pahalwan',phone:'',amount:500,paid:true,paidAt:new Date().toISOString(),photo:''},
+    {name:'Jahid Bhai',phone:'',amount:500,paid:true,paidAt:new Date().toISOString(),photo:''},
+    {name:'Juned Bhai',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Kabir Khan',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Kanni Bhai',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Soil Pradhan Ji',phone:'',amount:500,paid:true,paidAt:new Date().toISOString(),photo:''},
+    {name:'Monu Bhai (Sarua)',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Monu Bhai (Cake Wale)',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Raj Abbasi',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Rajesh Pahalwan',phone:'',amount:500,paid:true,paidAt:new Date().toISOString(),photo:''},
+    {name:'Rajesh (Aau)',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Rihan Bhai',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Sadab Hussain',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Sameer Bhai',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Shuhel Bhai',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Sohil Bhai Abbasi',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Tahir Bhai',phone:'',amount:500,paid:true,paidAt:new Date().toISOString(),photo:''},
+    {name:'Talim Bhai Farooqi',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Talim Bhai Abbasi',phone:'',amount:500,paid:false,paidAt:null,photo:''},
+    {name:'Mohammad Hashim (Admin)',phone:'7451908711',amount:500,paid:false,paidAt:null,photo:''}
+  ];
+  db.collection('campaigns').add({
+    name:'Chappal Stand',desc:'Masjid ke bahar steel chappal stand lagwana',
+    icon:'🕌',status:'active',target:18500,
+    members:defaultMembers,
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
+
+function doLogin() {
+  var pin = document.getElementById('pinInput').value.trim();
+  if(pin === ADMIN_PIN) {
+    state.isAdmin = true;
+    document.getElementById('loginOverlay').classList.remove('show');
+    document.getElementById('app').classList.add('show');
+    document.getElementById('modeBadge').textContent = '🔐 Admin';
+    document.getElementById('modeBadge').className = 'badge badge-admin';
+    document.querySelectorAll('.admin-only').forEach(function(el){el.classList.add('show');});
+    document.querySelectorAll('.nav-btn.admin-only').forEach(function(el){el.style.display='flex';});
+    renderAll(); return;
+  }
+  var found = false;
+  state.roles.forEach(function(r) {
+    if(r.pin === pin) {
+      found = true;
+      state.isSubAdmin = true;
+      state.subAdminPerms = r.perms || {};
+      document.getElementById('loginOverlay').classList.remove('show');
+      document.getElementById('app').classList.add('show');
+      document.getElementById('modeBadge').textContent = '🛡️ ' + r.name;
+      document.getElementById('modeBadge').className = 'badge badge-admin';
+      if(r.perms && r.perms.canPaid) {
+        document.querySelectorAll('.admin-only').forEach(function(el){el.classList.add('show');});
+      }
+      renderAll();
+    }
+  });
+  if(!found) { document.getElementById('loginErr').style.display = 'block'; }
+}
+
+function doView() {
+  document.getElementById('loginOverlay').classList.remove('show');
+  document.getElementById('app').classList.add('show');
+  renderAll();
+}
+
+function doLogout() {
+  state.isAdmin = false; state.isSubAdmin = false;
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('pinInput').value = '';
+  document.getElementById('loginErr').style.display = 'none';
+  document.querySelectorAll('.admin-only').forEach(function(el){el.classList.remove('show');});
+  document.querySelectorAll('.nav-btn.admin-only').forEach(function(el){el.style.display='none';});
+  document.getElementById('loginOverlay').classList.add('show');
+}
+
+function canEdit() { return state.isAdmin || (state.isSubAdmin && state.subAdminPerms.canPaid); }
+function canApprove() { return state.isAdmin || (state.isSubAdmin && state.subAdminPerms.canApprove); }
+
+function goPage(n) {
+  state.curPage = n;
+  for(var i=0;i<5;i++){
+    var p=document.getElementById('page'+i);
+    var b=document.getElementById('nav'+i);
+    if(p) p.classList.toggle('active',i===n);
+    if(b) b.classList.toggle('active',i===n);
+  }
+  if(n===1 && !state.curCampId) showCampList();
+  if(n===3) renderExpenses();
+  if(n===4) renderAdminProofs();
+}
+
+function campStats(c) {
+  var mems=c.members||[];
+  var total=0,collected=0,paid=0,pending=0;
+  mems.forEach(function(m){
+    total+=m.amount;
+    if(m.paid){collected+=m.amount;paid++;}
+    else pending++;
+  });
+  return {total:total,collected:collected,paid:paid,pending:pending,remaining:total-collected};
+}
+
+function initials(name) {
+  return name.split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase();
+}
+
+function avatarColor(name) {
+  var colors=['#1a6b3a','#2980b9','#8e44ad','#c0392b','#d35400','#16a085','#1a5276'];
+  return colors[name.charCodeAt(0) % colors.length];
+}
+
+function maskPhone(phone) {
+  if(!phone||phone.length<6) return phone||'—';
+  return phone.substring(0,6)+'****';
+}
+
+function timeAgo(iso) {
+  if(!iso) return '';
+  var diff=(Date.now()-new Date(iso).getTime())/1000;
+  if(diff<60) return 'Abhi abhi';
+  if(diff<3600) return Math.floor(diff/60)+' min pehle';
+  if(diff<86400) return Math.floor(diff/3600)+' ghante pehle';
+  return Math.floor(diff/86400)+' din pehle';
+}
+
+function fmtDate() {
+  var d=new Date();
+  return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+}
+
+function compressImage(file, maxPx, quality, cb) {
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var w=img.width,h=img.height;
+      if(w>h){if(w>maxPx){h=h*maxPx/w;w=maxPx;}}
+      else{if(h>maxPx){w=w*maxPx/h;h=maxPx;}}
+      var c=document.createElement('canvas');
+      c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      cb(c.toDataURL('image/jpeg',quality));
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function openFile(id){document.getElementById(id).click();}
+function showModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2600);}
+function flashSave(){var el=document.getElementById('saveInd');el.classList.add('show');setTimeout(function(){el.classList.remove('show');},2000);}
+function openImgModal(src){document.getElementById('imgModalSrc').src=src;document.getElementById('imgModal').classList.add('show');}
+function closeImgModal(){document.getElementById('imgModal').classList.remove('show');}
+
+function renderAll() {
+  renderGlobalStats();
+  renderHomeCamps();
+  renderCampList();
+  renderRecentPayments();
+  renderTicker();
+  renderExpenseCampSelects();
+  renderProofCampSelect();
+}
+
+function renderGlobalStats() {
+  var totalCamps=state.campaigns.length,totalCollected=0,totalMembers=0;
+  state.campaigns.forEach(function(c){
+    var s=campStats(c);
+    totalCollected+=s.collected;
+    totalMembers+=(c.members||[]).length;
+  });
+  document.getElementById('globalStats').innerHTML=
+    '<div class="gstat green"><div class="v">'+totalCamps+'</div><div class="l">Campaigns</div></div>'+
+    '<div class="gstat gold"><div class="v">₹'+totalCollected.toLocaleString()+'</div><div class="l">Collected</div></div>'+
+    '<div class="gstat blue"><div class="v">'+totalMembers+'</div><div class="l">Members</div></div>';
+  document.getElementById('headerBadges').innerHTML=
+    '<span class="badge badge-gold">📋 '+totalCamps+' Campaigns</span>'+
+    '<span class="badge badge-gold">💰 ₹'+totalCollected.toLocaleString()+'</span>';
+}
+
+function campCardHtml(c, showActions) {
+  var s=campStats(c);
+  var tgt=c.target||s.total||1;
+  var pct=Math.min(100,Math.round(s.collected/tgt*100));
+  var statusLabel=c.status==='active'?'🟢 Active':c.status==='done'?'✅ Done':'⏸️ Inactive';
+  var statusCls=c.status==='active'?'active':c.status==='done'?'done':'inactive';
+  var actions='';
+  if(showActions && state.isAdmin) {
+    var togLabel=c.status==='active'?'⏸️ Pause':'▶️ Activate';
+    actions='<div class="camp-actions">'+
+      '<button class="camp-btn view" onclick="openCampaign(\''+c.id+'\')">👁️ Details</button>'+
+      '<button class="camp-btn toggle" onclick="toggleCampStatus(\''+c.id+'\')">'+togLabel+'</button>'+
+      '<button class="camp-btn del" onclick="deleteCampaign(\''+c.id+'\')">🗑️</button>'+
+    '</div>';
+  } else if(showActions) {
+    actions='<div class="camp-actions"><button class="camp-btn view" style="flex:2;" onclick="openCampaign(\''+c.id+'\')">👁️ Details Dekho</button></div>';
+  }
+  return '<div class="camp-card">'+
+    '<div class="camp-header" onclick="openCampaign(\''+c.id+'\')" >'+
+      '<div class="camp-top">'+
+        '<div class="camp-ico">'+c.icon+'</div>'+
+        '<div class="camp-info">'+
+          '<div class="camp-name">'+c.name+'</div>'+
+          '<div class="camp-desc">'+(c.desc||'')+'</div>'+
+        '</div>'+
+        '<span class="camp-status '+statusCls+'">'+statusLabel+'</span>'+
+      '</div>'+
+      '<div class="prog-bar"><div class="prog-fill" style="width:'+pct+'%"></div></div>'+
+      '<div class="prog-label"><span>₹'+s.collected.toLocaleString()+' collected</span><span>'+pct+'%</span></div>'+
+      '<div class="camp-nums">'+
+        '<div class="camp-num"><div class="v">'+((c.members||[]).length)+'</div><div class="l">Members</div></div>'+
+        '<div class="camp-num"><div class="v">'+s.paid+'</div><div class="l">✅ Paid</div></div>'+
+        '<div class="camp-num"><div class="v">'+s.pending+'</div><div class="l">⏳ Pending</div></div>'+
+        '<div class="camp-num"><div class="v">₹'+s.remaining.toLocaleString()+'</div><div class="l">Baki</div></div>'+
+      '</div>'+
+    '</div>'+
+    actions+
+  '</div>';
+}
+
+function renderHomeCamps() {
+  var el=document.getElementById('homeCampList');
+  if(!state.campaigns.length){el.innerHTML='<div class="empty-state"><div class="eico">🕌</div><p>Koi campaign nahi hai abhi.</p></div>';return;}
+  el.innerHTML=state.campaigns.map(function(c){return campCardHtml(c,true);}).join('');
+}
+
+function renderRecentPayments() {
+  var recentPaid=[];
+  state.campaigns.forEach(function(c){
+    (c.members||[]).forEach(function(m){
+      if(m.paid&&m.paidAt) recentPaid.push({name:m.name,amount:m.amount,paidAt:m.paidAt,camp:c.name});
+    });
+  });
+  recentPaid.sort(function(a,b){return new Date(b.paidAt)-new Date(a.paidAt);});
+  recentPaid=recentPaid.slice(0,5);
+  var el=document.getElementById('recentPayments');
+  if(!recentPaid.length){el.innerHTML='<div class="empty-state"><div class="eico">💰</div><p>Abhi koi payment nahi hui.</p></div>';return;}
+  el.innerHTML=recentPaid.map(function(p){
+    return '<div class="recent-item">'+
+      '<div class="recent-avatar">'+initials(p.name)+'</div>'+
+      '<div class="recent-info">'+
+        '<div class="recent-name">'+p.name+'</div>'+
+        '<div class="recent-time">'+p.camp+' · '+timeAgo(p.paidAt)+'</div>'+
+      '</div>'+
+      '<div class="recent-amount">₹'+p.amount.toLocaleString()+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function renderTicker() {
+  var items=[];
+  state.campaigns.forEach(function(c){
+    (c.members||[]).forEach(function(m){
+      if(m.paid&&m.paidAt) items.push(m.name+' ne ₹'+m.amount.toLocaleString()+' diye — '+c.name);
+    });
+  });
+  if(!items.length){document.getElementById('tickerWrap').style.display='none';return;}
+  document.getElementById('tickerWrap').style.display='block';
+  var doubled=items.concat(items);
+  document.getElementById('tickerInner').innerHTML=doubled.map(function(t){
+    return '<span class="ticker-item"><span class="dot"></span>'+t+'</span>';
+  }).join('');
+}
+
+function doGlobalSearch(q) {
+  var el=document.getElementById('globalSearchResults');
+  if(!q||q.length<2){el.style.display='none';return;}
+  q=q.toLowerCase();
+  var results=[];
+  state.campaigns.forEach(function(c){
+    (c.members||[]).forEach(function(m,i){
+      if(m.name.toLowerCase().includes(q)||(m.phone&&m.phone.includes(q))){
+        results.push({m:m,i:i,c:c});
+      }
+    });
+  });
+  if(!results.length){el.style.display='block';el.innerHTML='<div class="empty-state" style="padding:20px;"><p>Koi nahi mila.</p></div>';return;}
+  el.style.display='block';
+  el.innerHTML='<div class="sec-title">🔍 Results ('+results.length+')</div>'+
+    results.map(function(r){return memberCardHtml(r.m,r.i,r.c.id,r.c.name);}).join('');
+}
+
+function showCampList() {
+  state.curCampId=null;
+  document.getElementById('campListView').style.display='';
+  document.getElementById('campDetailView').style.display='none';
+}
+
+function renderCampList() {
+  var el=document.getElementById('campList');
+  if(!state.campaigns.length){el.innerHTML='<div class="empty-state"><div class="eico">🕌</div><p>Koi campaign nahi.</p></div>';return;}
+  el.innerHTML=state.campaigns.map(function(c){return campCardHtml(c,true);}).join('');
+}
+
+function backToCampList() {
+  state.curCampId=null;
+  document.getElementById('campDetailView').style.display='none';
+  document.getElementById('campListView').style.display='';
+}
+
+function openCampaign(id) {
+  state.curCampId=id;
+  state.memberFilter=0;
+  state.campSearch='';
+  document.getElementById('campSearch').value='';
+  ['mf0','mf1','mf2'].forEach(function(id,i){document.getElementById(id).classList.toggle('active',i===0);});
+  document.getElementById('campListView').style.display='none';
+  document.getElementById('campDetailView').style.display='';
+  goPage(1);
+  renderCampDetail();
+}
+
+function renderCampDetail() {
+  var c=state.campaigns.find(function(x){return x.id===state.curCampId;});
+  if(!c)return;
+  var s=campStats(c);
+  var tgt=c.target||s.total||1;
+  var pct=Math.min(100,Math.round(s.collected/tgt*100));
+  document.getElementById('campDetailHeader').innerHTML=
+    '<div class="donate-card" style="margin-bottom:14px;">'+
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">'+
+        '<div class="camp-ico" style="width:48px;height:48px;font-size:24px;">'+c.icon+'</div>'+
+        '<div style="flex:1;">'+
+          '<div style="font-size:17px;font-weight:800;color:#fff;">'+c.name+'</div>'+
+          '<div style="font-size:12px;color:rgba(255,255,255,.8);">'+(c.desc||'')+'</div>'+
+        '</div>'+
+        '<span class="camp-status '+(c.status==='active'?'active':'done')+'" style="background:rgba(255,255,255,.2);color:#fff;">'+(c.status==='active'?'🟢 Active':'✅ Done')+'</span>'+
+      '</div>'+
+      '<div class="prog-bar" style="background:rgba(255,255,255,.2);"><div class="prog-fill" style="width:'+pct+'%;"></div></div>'+
+      '<div class="prog-label" style="color:rgba(255,255,255,.8);margin-top:4px;"><span>₹'+s.collected.toLocaleString()+' / ₹'+tgt.toLocaleString()+'</span><span>'+pct+'%</span></div>'+
+      '<div class="camp-nums" style="margin-top:12px;">'+
+        '<div class="camp-num" style="background:rgba(255,255,255,.12);"><div class="v" style="color:#fff;">₹'+s.collected.toLocaleString()+'</div><div class="l" style="color:rgba(255,255,255,.65);">Collected</div></div>'+
+        '<div class="camp-num" style="background:rgba(255,255,255,.12);"><div class="v" style="color:var(--gold2);">'+s.paid+'</div><div class="l" style="color:rgba(255,255,255,.65);">Paid ✅</div></div>'+
+        '<div class="camp-num" style="background:rgba(255,255,255,.12);"><div class="v" style="color:#f5a89a;">'+s.pending+'</div><div class="l" style="color:rgba(255,255,255,.65);">Pending ⏳</div></div>'+
+      '</div>'+
+    '</div>';
+  renderMemberList();
+  renderProofs();
+  renderWAMessages();
+}
+
+function memberCardHtml(m, idx, campId, campName) {
+  var isPaid=m.paid;
+  var av=m.photo
+    ?'<img class="avatar-img" src="'+m.photo+'" onclick="openImgModal(\''+m.photo+'\')" />'
+    :'<div class="avatar-placeholder" style="background:'+avatarColor(m.name)+';">'+initials(m.name)+'</div>';
+  var camBtn=state.isAdmin
+    ?'<button class="cam-btn" onclick="event.stopPropagation();trigPhotoUpload(\''+campId+'\','+idx+')">📷</button>'+
+      '<input type="file" accept="image/*" class="file-hidden" id="pf_'+campId+'_'+idx+'" onchange="handleMemberPhoto(\''+campId+'\','+idx+',this)"/>'
+    :'';
+  var editBtn=canEdit()
+    ?'<button class="edit-btn-small" onclick="openMemberEdit(\''+campId+'\','+idx+')">✏️</button>'
+    :'';
+  var toggleBtn=canEdit()
+    ?'<button class="status-badge '+(isPaid?'paid':'pending')+'" onclick="toggleMemberPaid(\''+campId+'\','+idx+')">'+
+        (isPaid?'✅ Paid':'⏳ Pending')+
+      '</button>'
+    :'<span class="status-badge '+(isPaid?'paid':'pending')+'" style="cursor:default;">'+
+        (isPaid?'✅ Paid':'⏳ Pending')+
+      '</span>';
+  var campTag=campName?'<div class="member-phone" style="color:var(--g3);font-weight:600;">📋 '+campName+'</div>':'';
+  return '<div class="member-card '+(isPaid?'paid-card':'pending-card')+'">'+
+    '<div class="member-avatar">'+av+
+      '<span class="status-dot '+(isPaid?'paid':'pending')+'"></span>'+
+      camBtn+
+    '</div>'+
+    '<div class="member-info">'+
+      '<div class="member-name">'+m.name+'</div>'+
+      '<div class="member-phone">'+maskPhone(m.phone)+'</div>'+
+      '<div class="member-amount">₹'+m.amount.toLocaleString()+(isPaid&&m.paidAt?' · '+timeAgo(m.paidAt):'')+'</div>'+
+      campTag+
+    '</div>'+
+    '<div class="member-actions">'+toggleBtn+editBtn+'</div>'+
+  '</div>';
+}
+
+function renderMemberList() {
+  var c=state.campaigns.find(function(x){return x.id===state.curCampId;});
+  if(!c)return;
+  var mems=c.members||[];
+  var q=state.campSearch.toLowerCase();
+  var filtered=mems.map(function(m,i){return {m:m,i:i};}).filter(function(item){
+    var m=item.m;
+    var matchQ=!q||(m.name.toLowerCase().includes(q)||(m.phone&&m.phone.includes(q)));
+    var matchF=state.memberFilter===0||(state.memberFilter===1&&m.paid)||(state.memberFilter===2&&!m.paid);
+    return matchQ&&matchF;
+  });
+  filtered.sort(function(a,b){
+    if(a.m.paid&&!b.m.paid)return -1;
+    if(!a.m.paid&&b.m.paid)return 1;
+    if(a.m.paidAt&&b.m.paidAt)return new Date(b.m.paidAt)-new Date(a.m.paidAt);
+    return 0;
+  });
+  var paid=mems.filter(function(m){return m.paid;}).length;
+  var pending=mems.length-paid;
+  document.getElementById('mf0').textContent='Sab ('+mems.length+')';
+  document.getElementById('mf1').textContent='✅ Paid ('+paid+')';
+  document.getElementById('mf2').textContent='⏳ Pending ('+pending+')';
+  var el=document.getElementById('memberList');
+  if(!filtered.length){el.innerHTML='<div class="empty-state"><div class="eico">👤</div><p>Koi nahi mila.</p></div>';return;}
+  el.innerHTML=filtered.map(function(item){return memberCardHtml(item.m,item.i,state.curCampId,null);}).join('');
+}
+
+function setMemberFilter(f) {
+  state.memberFilter=f;
+  ['mf0','mf1','mf2'].forEach(function(id,i){document.getElementById(id).classList.toggle('active',i===f);});
+  renderMemberList();
+}
+
+function doCampSearch(q) { state.campSearch=q; renderMemberList(); }
+
+function toggleMemberPaid(campId,idx) {
+  if(!canEdit())return;
+  var c=state.campaigns.find(function(x){return x.id===campId;});
+  if(!c)return;
+  var members=JSON.parse(JSON.stringify(c.members||[]));
+  members[idx].paid=!members[idx].paid;
+  members[idx].paidAt=members[idx].paid?new Date().toISOString():null;
+  db.collection('campaigns').doc(campId).update({members:members}).then(function(){
+    flashSave();
+    showToast(members[idx].paid?'✅ Paid mark ho gaya!':'↩️ Pending ho gaya!');
+  });
+}
+
+function openMemberEdit(campId,idx) {
+  var c=state.campaigns.find(function(x){return x.id===campId;});
+  if(!c)return;
+  var m=c.members[idx];
+  document.getElementById('editMName').value=m.name;
+  document.getElementById('editMPhone').value=m.phone||'';
+  document.getElementById('editMAmount').value=m.amount;
+  document.getElementById('editMCampId').value=campId;
+  document.getElementById('editMIdx').value=idx;
+  showModal('editMemberModal');
+}
+
+function saveMemberEdit() {
+  var campId=document.getElementById('editMCampId').value;
+  var idx=parseInt(document.getElementById('editMIdx').value);
+  var c=state.campaigns.find(function(x){return x.id===campId;});
+  if(!c)return;
+  var members=JSON.parse(JSON.stringify(c.members||[]));
+  members[idx].name=document.getElementById('editMName').value.trim()||members[idx].name;
+  members[idx].phone=document.getElementById('editMPhone').value.trim();
+  members[idx].amount=parseInt(document.getElementById('editMAmount').value)||members[idx].amount;
+  db.collection('campaigns').doc(campId).update({members:members}).then(function(){
+    closeModal('editMemberModal');flashSave();showToast('✅ Member update ho gaya!');
+  });
+}
+
+function trigPhotoUpload(campId,idx){document.getElementById('pf_'+campId+'_'+idx).click();}
+function handleMemberPhoto(campId,idx,input) {
+  var file=input.files[0];if(!file)return;
+  compressImage(file,150,.75,function(data){
+    var c=state.campaigns.find(function(x){return x.id===campId;});
+    if(!c)return;
+    var members=JSON.parse(JSON.stringify(c.members||[]));
+    members[idx].photo=data;
+    db.collection('campaigns').doc(campId).update({members:members}).then(function(){
+      flashSave();showToast('📸 Photo save ho gayi!');
+    });
+  });
+}
+
+function addMember() {
+  var name=document.getElementById('nmName').value.trim();
+  if(!name){showToast('❌ Naam daalo!');return;}
+  var c=state.campaigns.find(function(x){return x.id===state.curCampId;});
+  if(!c)return;
+  var members=JSON.parse(JSON.stringify(c.members||[]));
+  members.push({
+    name:name,phone:document.getElementById('nmPhone').value.trim(),
+    amount:parseInt(document.getElementById('nmAmount').value)||500,
+    paid:false,paidAt:null,photo:''
+  });
+  db.collection('campaigns').doc(state.curCampId).update({members:members}).then(function(){
+    closeModal('addMemberModal');
+    document.getElementById('nmName').value='';
+    document.getElementById('nmPhone').value='';
+    flashSave();showToast('✅ '+name+' add ho gaya!');
+  });
+}
+
+function createCampaign() {
+  var name=document.getElementById('ncName').value.trim();
+  if(!name){showToast('❌ Campaign naam daalo!');return;}
+  db.collection('campaigns').add({
+    name:name,desc:document.getElementById('ncDesc').value.trim(),
+    target:parseInt(document.getElementById('ncTarget').value)||0,
+    icon:document.getElementById('ncIcon').value,
+    status:document.getElementById('ncStatus').value,
+    members:[],createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function(){
+    closeModal('addCampModal');
+    ['ncName','ncDesc','ncTarget'].forEach(function(id){document.getElementById(id).value='';});
+    showToast('✅ Campaign ban gaya!');
+  });
+}
+
+function toggleCampStatus(id) {
+  var c=state.campaigns.find(function(x){return x.id===id;});
+  if(!c)return;
+  var newStatus=c.status==='active'?'inactive':'active';
+  db.collection('campaigns').doc(id).update({status:newStatus}).then(function(){
+    showToast(newStatus==='active'?'▶️ Campaign active ho gaya!':'⏸️ Campaign pause ho gaya!');
+  });
+}
+
+function deleteCampaign(id) {
+  if(!confirm('Kya aap sach mein is campaign ko delete karna chahte hain?'))return;
+  db.collection('campaigns').doc(id).delete().then(function(){showToast('🗑️ Campaign delete ho gaya!');});
+}
+
+function handleProofImg(input) {
+  var file=input.files[0];if(!file)return;
+  compressImage(file,600,.8,function(data){
+    state.proofImgData=data;
+    document.getElementById('proofImgPreview').innerHTML='<img src="'+data+'" style="width:100%;border-radius:10px;margin-bottom:8px;"/>';
+  });
+}
+
+function openProofModal() { renderProofCampSelect(); showModal('proofModal'); }
+
+function renderProofCampSelect() {
+  var el=document.getElementById('proofCampId');
+  if(!el)return;
+  el.innerHTML=state.campaigns.map(function(c){return '<option value="'+c.id+'">'+c.name+'</option>';}).join('');
+}
+
+function submitProof() {
+  var name=document.getElementById('proofName').value.trim();
+  var phone=document.getElementById('proofPhone').value.trim();
+  var amount=parseInt(document.getElementById('proofAmount').value);
+  var campId=document.getElementById('proofCampId').value;
+  if(!name||!phone||!amount){showToast('❌ Sab fields bharo!');return;}
+  if(!state.proofImgData){showToast('❌ Screenshot select karo!');return;}
+  db.collection('proofs').add({
+    name:name,phone:phone,amount:amount,campId:campId,
+    img:state.proofImgData,status:'pending',
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function(){
+    closeModal('proofModal');
+    state.proofImgData='';
+    document.getElementById('proofImgPreview').innerHTML='';
+    ['proofName','proofPhone','proofAmount'].forEach(function(id){document.getElementById(id).value='';});
+    showToast('✅ Proof submit ho gaya! Admin approve karega.');
+  });
+}
+
+function renderProofs() {
+  var el=document.getElementById('proofList');
+  if(!el)return;
+  var campProofs=state.proofs.filter(function(p){return p.campId===state.curCampId;});
+  if(!campProofs.length){el.innerHTML='<div class="empty-state" style="padding:20px;"><p>Koi proof submit nahi hua.</p></div>';return;}
+  el.innerHTML=campProofs.map(function(p){
+    var statusCls=p.status==='approved'?'approved':p.status==='rejected'?'rejected':'pending-review';
+    var statusLabel=p.status==='approved'?'✅ Approved':p.status==='rejected'?'❌ Rejected':'⏳ Review Pending';
+    var actions=canApprove()&&p.status==='pending'
+      ?'<div class="proof-actions"><button class="approve-btn" onclick="approveProof(\''+p.id+'\')">✅ Approve</button><button class="reject-btn" onclick="rejectProof(\''+p.id+'\')">❌ Reject</button></div>'
+      :'';
+    return '<div class="proof-card">'+
+      '<div class="proof-status '+statusCls+'">'+statusLabel+'</div>'+
+      '<div style="font-size:13px;font-weight:700;color:var(--text);">'+p.name+'</div>'+
+      '<div style="font-size:12px;color:var(--muted);">'+maskPhone(p.phone)+' · ₹'+p.amount.toLocaleString()+'</div>'+
+      (p.img?'<img src="'+p.img+'" class="proof-img" onclick="openImgModal(\''+p.img+'\')" />':'')+
+      actions+
+    '</div>';
+  }).join('');
+}
+
+function renderAdminProofs() {
+  var el=document.getElementById('adminProofList');
+  if(!el)return;
+  var pending=state.proofs.filter(function(p){return p.status==='pending';});
+  if(!pending.length){el.innerHTML='<p style="color:var(--g3);font-size:13px;">✅ Koi pending proof nahi hai.</p>';return;}
+  el.innerHTML=pending.map(function(p){
+    var camp=state.campaigns.find(function(c){return c.id===p.campId;});
+    return '<div class="proof-card">'+
+      '<div class="proof-status pending-review">⏳ Pending Review</div>'+
+      '<div style="font-size:13px;font-weight:700;color:var(--text);">'+p.name+'</div>'+
+      '<div style="font-size:12px;color:var(--muted);">'+maskPhone(p.phone)+' · ₹'+p.amount.toLocaleString()+(camp?' · '+camp.name:'')+'</div>'+
+      (p.img?'<img src="'+p.img+'" class="proof-img" onclick="openImgModal(\''+p.img+'\')" />':'')+
+      '<div class="proof-actions"><button class="approve-btn" onclick="approveProof(\''+p.id+'\')">✅ Approve</button><button class="reject-btn" onclick="rejectProof(\''+p.id+'\')">❌ Reject</button></div>'+
+    '</div>';
+  }).join('');
+}
+
+function approveProof(id) {
+  db.collection('proofs').doc(id).update({status:'approved'}).then(function(){
+    showToast('✅ Proof approve ho gaya!');renderAdminProofs();renderProofs();
+  });
+}
+function rejectProof(id) {
+  db.collection('proofs').doc(id).update({status:'rejected'}).then(function(){
+    showToast('❌ Proof reject ho gaya!');renderAdminProofs();renderProofs();
+  });
+}
+
+function handleExPhoto(input) {
+  var file=input.files[0];if(!file)return;
+  compressImage(file,400,.75,function(data){
+    state.exPhotoData=data;
+    document.getElementById('exPhotoPreview').innerHTML='<img src="'+data+'" style="width:100%;border-radius:10px;margin-bottom:8px;"/>';
+  });
+}
+
+function addExpense() {
+  var desc=document.getElementById('exDesc').value.trim();
+  var amount=parseInt(document.getElementById('exAmount').value);
+  var note=document.getElementById('exNote').value.trim();
+  var campId=document.getElementById('exCampId').value;
+  if(!desc||!amount){showToast('❌ Description aur amount daalo!');return;}
+  db.collection('expenses').add({
+    desc:desc,amount:amount,note:note,campId:campId,
+    img:state.exPhotoData,date:fmtDate(),
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function(){
+    ['exDesc','exAmount','exNote'].forEach(function(id){document.getElementById(id).value='';});
+    state.exPhotoData='';
+    document.getElementById('exPhotoPreview').innerHTML='';
+    showToast('💸 Kharcha add ho gaya!');
+  });
+}
+
+function deleteExpense(id) {
+  if(!confirm('Kharcha delete karein?'))return;
+  db.collection('expenses').doc(id).delete().then(function(){showToast('🗑️ Delete ho gaya!');});
+}
+
+function renderExpenses() {
+  var el=document.getElementById('expenseList');
+  if(!el)return;
+  if(!state.expenses.length){el.innerHTML='<div class="empty-state"><div class="eico">💸</div><p>Koi kharcha nahi daala gaya.</p></div>';return;}
+  el.innerHTML=state.expenses.map(function(ex){
+    var camp=state.campaigns.find(function(c){return c.id===ex.campId;});
+    return '<div class="expense-card">'+
+      '<div class="expense-top">'+
+        (ex.img?'<img src="'+ex.img+'" class="expense-img" onclick="openImgModal(\''+ex.img+'\')" />'
+               :'<div class="expense-ph">🧾</div>')+
+        '<div class="expense-info">'+
+          '<div class="expense-title">'+ex.desc+'</div>'+
+          '<div class="expense-amount">−₹'+ex.amount.toLocaleString()+'</div>'+
+          '<div class="expense-date">📅 '+ex.date+(camp?' · '+camp.name:'')+'</div>'+
+          (ex.note?'<div class="expense-note">📝 '+ex.note+'</div>':'')+
+        '</div>'+
+        (state.isAdmin?'<button class="del-btn" onclick="deleteExpense(\''+ex.id+'\')">🗑️</button>':'')+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function renderExpenseSummary() {
+  var el=document.getElementById('expenseSummary');
+  if(!el)return;
+  var totalEx=state.expenses.reduce(function(s,e){return s+e.amount;},0);
+  var totalColl=0;
+  state.campaigns.forEach(function(c){totalColl+=campStats(c).collected;});
+  el.innerHTML='<div class="summary-box">'+
+    '<div class="summary-item"><div class="sv gold">₹'+totalColl.toLocaleString()+'</div><div class="sl">Total Collected</div></div>'+
+    '<div class="summary-item"><div class="sv red">₹'+totalEx.toLocaleString()+'</div><div class="sl">Total Kharcha</div></div>'+
+    '<div class="summary-item"><div class="sv">₹'+(totalColl-totalEx).toLocaleString()+'</div><div class="sl">Balance</div></div>'+
+  '</div>';
+}
+
+function renderExpenseCampSelects() {
+  var sel=document.getElementById('exCampId');
+  if(sel) sel.innerHTML=state.campaigns.map(function(c){return '<option value="'+c.id+'">'+c.name+'</option>';}).join('');
+}
+
+function renderWAMessages() {
+  var c=state.campaigns.find(function(x){return x.id===state.curCampId;});
+  if(!c)return;
+  var s=campStats(c);
+  var mems=c.members||[];
+  var paidNames=mems.filter(function(m){return m.paid;}).map(function(m){return '✅ '+m.name;}).join('\n')||'Abhi kisi ne nahi diya';
+  var pendNames=mems.filter(function(m){return !m.paid;}).map(function(m,i){return (i+1)+'. '+m.name;}).join('\n')||'Sab ne de diya! Alhamdulillah ✅';
+  var tgt=c.target||s.total;
+  var msgs=[
+    {t:'📊 Collection Update',b:'🕌 *SONAI MASJID — '+c.name.toUpperCase()+'*\n\n👥 Members: '+mems.length+'\n✅ Paid: '+s.paid+' log\n⏳ Pending: '+s.pending+' log\n\n💰 Collected: ₹'+s.collected.toLocaleString()+'\n💰 Target: ₹'+tgt.toLocaleString()+'\n💰 Baki: ₹'+s.remaining.toLocaleString()+'\n\n🔗 Live Dekho:\nhttps://hashim788.github.io/Sonai-Masjid-\n\nJazakAllah Khair 🤲'},
+    {t:'⏳ Pending List',b:'🕌 *SONAI MASJID — '+c.name.toUpperCase()+'*\n\nIn logo ki payment baki hai:\n\n'+pendNames+'\n\n💰 ₹500 per person\n🔗 https://hashim788.github.io/Sonai-Masjid-\n\nJaldi confirm karein. JazakAllah 🤲'},
+    {t:'✅ Thank You',b:'🕌 *SONAI MASJID — JazakAllah Khair* ✅\n\n*'+c.name+'* mein payment dene wale:\n\n'+paidNames+'\n\n💰 Total: ₹'+s.collected.toLocaleString()+' / ₹'+tgt.toLocaleString()+'\n\nAllah aap sab ko ajar de. Ameen 🤲'}
+  ];
+  var el=document.getElementById('waMessages');
+  el.innerHTML=msgs.map(function(msg,i){
+    return '<div style="background:var(--card);border-radius:var(--radius2);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;">'+
+      '<div style="background:linear-gradient(90deg,#25D366,#128C7E);padding:10px 14px;font-size:12.5px;font-weight:700;color:#fff;">💬 '+msg.t+'</div>'+
+      '<div style="padding:12px 14px;font-size:12px;line-height:1.7;white-space:pre-wrap;background:#f9f7f0;color:var(--text);" id="wb'+i+'">'+msg.b+'</div>'+
+      '<button onclick="copyWA('+i+')" id="wc'+i+'" style="width:100%;padding:10px;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;font-size:12.5px;font-weight:700;cursor:pointer;">📋 Copy Message</button>'+
+    '</div>';
+  }).join('');
+}
+
+function copyWA(i) {
+  var text=document.getElementById('wb'+i).textContent;
+  navigator.clipboard.writeText(text).then(function(){
+    var btn=document.getElementById('wc'+i);
+    btn.textContent='✅ Copied!';
+    setTimeout(function(){btn.textContent='📋 Copy Message';},2200);
+    showToast('✅ Copy ho gaya!');
+  });
+}
+
+function addAdminRole() {
+  var name=document.getElementById('roleName').value.trim();
+  var pin=document.getElementById('rolePin').value.trim();
+  if(!name||!pin){showToast('❌ Naam aur PIN daalo!');return;}
+  db.collection('roles').add({
+    name:name,pin:pin,
+    perms:{
+      canView:document.getElementById('rCanView').checked,
+      canPaid:document.getElementById('rCanPaid').checked,
+      canApprove:document.getElementById('rCanApprove').checked
+    }
+  }).then(function(){closeModal('addRoleModal');showToast('✅ Sub-Admin add ho gaya!');});
+}
+
+function renderRoles() {
+  var el=document.getElementById('roleList');
+  if(!el)return;
+  if(!state.roles.length){el.innerHTML='<div class="empty-state" style="padding:20px;"><p>Koi sub-admin nahi hai.</p></div>';return;}
+  el.innerHTML=state.roles.map(function(r){
+    var perms=[];
+    if(r.perms&&r.perms.canView)perms.push('Dekh sakta hai');
+    if(r.perms&&r.perms.canPaid)perms.push('Payment mark');
+    if(r.perms&&r.perms.canApprove)perms.push('Approve kar sakta hai');
+    return '<div class="role-card">'+
+      '<div class="role-ico">👤</div>'+
+      '<div class="role-info">'+
+        '<div class="role-name">'+r.name+'</div>'+
+        '<div class="role-level">PIN: '+r.pin+' · '+perms.join(', ')+'</div>'+
+      '</div>'+
+      (state.isAdmin?'<button class="role-del" onclick="deleteRole(\''+r.id+'\')">🗑️</button>':'')+
+    '</div>';
+  }).join('');
+}
+
+function deleteRole(id) {
+  if(!confirm('Delete karein?'))return;
+  db.collection('roles').doc(id).delete().then(function(){showToast('🗑️ Delete ho gaya!');});
+}
+
+function loadSettings() {
+  var upiEl=document.getElementById('settingsUpi');
+  if(upiEl) upiEl.value='7451908711@paytm';
+}
+
+function saveSettings() {
+  var upi=document.getElementById('settingsUpi').value.trim();
+  db.collection('settings').doc('main').set({upi:upi},{merge:true}).then(function(){
+    showToast('✅ Settings save ho gayi!');flashSave();
+  });
+}
+
+function uploadQR(input) {
+  var file=input.files[0];if(!file)return;
+  compressImage(file,400,.85,function(data){
+    db.collection('settings').doc('main').set({qr:data},{merge:true}).then(function(){
+      renderQR(data);showToast('✅ QR Code save ho gaya!');flashSave();
+    });
+  });
+}
+
+function renderQR(data) {
+  document.getElementById('qrSection').innerHTML=
+    '<img src="'+data+'" style="width:200px;height:200px;object-fit:contain;margin:0 auto 10px;display:block;border-radius:12px;" onclick="openImgModal(\''+data+'\')" />'+
+    '<p style="font-size:12px;color:var(--muted);">Scan karke seedha payment karo</p>'+
+    (state.isAdmin?'<button class="submit-btn admin-only" style="margin-top:10px;width:auto;padding:8px 16px;" onclick="document.getElementById(\'qrUpload\').click()">📷 QR Change Karo</button>'+
+    '<input type="file" accept="image/*" class="file-hidden" id="qrUpload" onchange="uploadQR(this)"/>':'');
+}
+</script>
+
+</body>
+</html>
