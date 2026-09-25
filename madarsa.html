@@ -277,11 +277,8 @@ input,select,textarea{font-family:'Poppins',sans-serif;outline:none;}
     </div>
     <input class="fi" type="text" id="sName" placeholder="Student ka Naam *"/>
     <input class="fi" type="number" id="sAge" placeholder="Umar (Age)"/>
-    <select class="fi" id="sClass">
-      <option value="">Class Select Karo *</option>
-      <option>Hindi</option><option>English</option><option>Math</option>
-      <option>Nazra</option><option>Alim</option><option>Darja</option>
-    </select>
+    <input class="fi" type="text" id="sClass" placeholder="Class/Marhala (e.g. Qaida, Para, Quran, Urdu) *" list="classSuggestions"/>
+    <datalist id="classSuggestions" id="classSuggestDl"></datalist>
     <input class="fi" type="text" id="sGuardian" placeholder="Wali ka Naam *"/>
     <input class="fi" type="tel" id="sPhone" placeholder="Wali ka Phone Number"/>
     <input class="fi" type="number" id="sFees" placeholder="Monthly Fees ₹ (0 = free)"/>
@@ -297,11 +294,7 @@ input,select,textarea{font-family:'Poppins',sans-serif;outline:none;}
     </div>
     <input class="fi" type="text" id="eSName" placeholder="Naam"/>
     <input class="fi" type="number" id="eSAge" placeholder="Umar"/>
-    <select class="fi" id="eSClass">
-      <option value="">Class</option>
-      <option>Hindi</option><option>English</option><option>Math</option>
-      <option>Nazra</option><option>Alim</option><option>Darja</option>
-    </select>
+    <input class="fi" type="text" id="eSClass" placeholder="Class/Marhala" list="classSuggestions"/>
     <input class="fi" type="text" id="eSGuardian" placeholder="Wali ka Naam"/>
     <input class="fi" type="tel" id="eSPhone" placeholder="Phone"/>
     <input class="fi" type="number" id="eSFees" placeholder="Monthly Fees ₹"/>
@@ -319,14 +312,18 @@ input,select,textarea{font-family:'Poppins',sans-serif;outline:none;}
     <input class="fi" type="text" id="cName" placeholder="Naam *"/>
     <input class="fi" type="tel" id="cPhone" placeholder="Phone Number"/>
     <select class="fi" id="cRole">
-      <option value="Member">Member</option>
-      <option value="President">President</option>
-      <option value="Secretary">Secretary</option>
-      <option value="Treasurer">Treasurer (Khazanchi)</option>
-      <option value="Nazim">Nazim</option>
-      <option value="Muhtamim">Muhtamim</option>
-      <option value="Teacher">Teacher</option>
-      <option value="Supervisor">Supervisor</option>
+      <optgroup label="── Zimmedaran (Committee) ──">
+        <option value="Muhtamim">Muhtamim (مہتمم) — Incharge</option>
+        <option value="Nazim">Nazim (ناظم) — Organizer</option>
+        <option value="Khazanchi">Khazanchi (خزانچی) — Treasurer</option>
+        <option value="Katib">Katib (کاتب) — Secretary</option>
+        <option value="Nigran">Nigran (نگران) — Supervisor</option>
+        <option value="Mushir">Mushir (مشیر) — Advisor</option>
+      </optgroup>
+      <optgroup label="── Chanda Dene Wale ──">
+        <option value="Chanda_Member">Chanda Member (چندہ ممبر)</option>
+        <option value="Aala_Chanda">Aala Chanda (اعلیٰ چندہ)</option>
+      </optgroup>
     </select>
     <input class="fi" type="text" id="cNote" placeholder="Note (optional)"/>
     <button class="submit-btn gold" onclick="addCommMember()">✅ Add Karo</button>
@@ -480,16 +477,8 @@ input,select,textarea{font-family:'Poppins',sans-serif;outline:none;}
     <div class="div-admin-only" id="addStuBtn" style="margin-bottom:12px;">
       <button class="submit-btn" onclick="showModal('addStudentModal')">➕ Naya Student Add Karo</button>
     </div>
-    <div class="filter-tabs">
-      <button class="ftab active" id="sf0" onclick="setStuFilter(0)">Sab</button>
-      <button class="ftab" id="sf1" onclick="setStuFilter(1)">✅ Fees Paid</button>
-      <button class="ftab" id="sf2" onclick="setStuFilter(2)">⏳ Fees Pending</button>
-      <button class="ftab" id="sf3" onclick="setStuFilter(3)">Hindi</button>
-      <button class="ftab" id="sf4" onclick="setStuFilter(4)">English</button>
-      <button class="ftab" id="sf5" onclick="setStuFilter(5)">Math</button>
-      <button class="ftab" id="sf6" onclick="setStuFilter(6)">Nazra</button>
-      <button class="ftab" id="sf7" onclick="setStuFilter(7)">Alim</button>
-      <button class="ftab" id="sf8" onclick="setStuFilter(8)">Darja</button>
+    <div class="filter-tabs" id="stuFilterTabs">
+      <!-- Dynamic tabs yahan render honge -->
     </div>
     <div id="studentList"></div>
   </div>
@@ -748,9 +737,11 @@ function sbGo(n) { closeSidebar(); goPage(n); }
 // ═══ RENDER ALL ═══
 function renderAll() {
   renderPubStats();
+  buildStuFilterTabs();
   renderStudents();
   renderAttList();
   renderHomeSummary();
+  renderHomeAnn();
 }
 
 // ═══ PUBLIC STATS ═══
@@ -795,20 +786,39 @@ function renderHomeAnn() {
 }
 
 // ═══ STUDENTS ═══
+function buildStuFilterTabs() {
+  // Get all unique classes from students
+  var classes = [];
+  state.students.forEach(function(s) {
+    if(s.sClass && classes.indexOf(s.sClass) < 0) classes.push(s.sClass);
+  });
+  // Update datalist suggestions
+  var dl = document.getElementById('classSuggestions');
+  if(dl) dl.innerHTML = classes.map(function(c){ return '<option value="'+c+'">'; }).join('');
+
+  var el = document.getElementById('stuFilterTabs');
+  if(!el) return;
+  var filters = ['Sab','✅ Paid','⏳ Pending'].concat(classes);
+  el.innerHTML = filters.map(function(f,i){
+    return '<button class="ftab'+(state.stuFilter===i?' active':'')+'" onclick="setStuFilter('+i+')">'+f+'</button>';
+  }).join('');
+  state._stuFilterClasses = classes;
+}
+
 function setStuFilter(f) {
   state.stuFilter = f;
-  for(var i=0;i<9;i++){ var el=document.getElementById('sf'+i); if(el) el.classList.toggle('active',i===f); }
+  buildStuFilterTabs();
   renderStudents();
 }
 
 function renderStudents() {
   var el = document.getElementById('studentList');
   if(!el) return;
-  var classes = ['','','','Hindi','English','Math','Nazra','Alim','Darja'];
+  var classes = state._stuFilterClasses || [];
   var filtered = state.students.filter(function(s) {
-    if(state.stuFilter===1) return s.feesPaid;
-    if(state.stuFilter===2) return !s.feesPaid;
-    if(state.stuFilter>=3) return s.sClass === classes[state.stuFilter];
+    if(state.stuFilter===1) return s.fees > 0 && s.feesPaid;
+    if(state.stuFilter===2) return s.fees > 0 && !s.feesPaid;
+    if(state.stuFilter>=3) return s.sClass === classes[state.stuFilter-3];
     return true;
   });
   // Paid on top
@@ -844,7 +854,7 @@ function renderStudents() {
             '<div class="stu-class">Class: '+s.sClass+'</div>'+
           '</div>'+
           '<div class="stu-actions">'+
-            '<span class="fees-badge '+(s.feesPaid?'paid':'pending')+'" style="cursor:default;">'+(s.feesPaid?'✅ Paid':'⏳ Pending')+'</span>'+
+            (s.fees>0?'<span class="fees-badge '+(s.feesPaid?'paid':'pending')+'" style="cursor:default;">'+(s.feesPaid?'✅ Paid':'⏳ Pending')+'</span>':'')+
           '</div>'+
         '</div>';
       }).join('');
@@ -916,20 +926,29 @@ function renderAttList() {
   var el = document.getElementById('attList');
   if(!el) return;
   if(!state.students.length){ el.innerHTML='<div class="empty-state"><div class="eico">👤</div><p>Koi student nahi hai.</p></div>'; return; }
+
+  if(!canEdit()) {
+    var presentList = state.students.filter(function(s){ return state.attendance[s.id]==='present'; });
+    var absentList = state.students.filter(function(s){ return state.attendance[s.id]==='absent'; });
+    if(!presentList.length && !absentList.length) {
+      el.innerHTML='<div class="empty-state"><div class="eico">📋</div><p>Aaj ki hazri abhi tak nahi li gayi.</p></div>';
+      return;
+    }
+    var h='';
+    if(presentList.length) h+='<div style="background:#e8f5ee;border-radius:10px;padding:12px 16px;margin-bottom:8px;font-size:13px;font-weight:700;color:#1a7a3a;">✅ Present: '+presentList.length+' Students</div>';
+    if(absentList.length) h+='<div style="background:#fdf0ee;border-radius:10px;padding:12px 16px;font-size:13px;font-weight:700;color:#c0392b;">❌ Absent: '+absentList.length+' Students</div>';
+    el.innerHTML = h;
+    return;
+  }
+
   el.innerHTML = state.students.map(function(s){
     var att = state.attendance[s.id];
     return '<div class="att-card">'+
-      '<div>'+
-        '<div class="att-name">'+
-          (canEdit() ? s.name : 'Student — '+s.sClass)+
-        '</div>'+
-        '<div class="att-class">'+s.sClass+'</div>'+
-      '</div>'+
+      '<div><div class="att-name">'+s.name+'</div><div class="att-class">'+s.sClass+'</div></div>'+
       '<div class="att-btns">'+
         '<button class="att-btn '+(att==='present'?'sel-present':'present')+'" onclick="markAtt(\''+s.id+'\',\'present\')">✅ Present</button>'+
         '<button class="att-btn '+(att==='absent'?'sel-absent':'absent')+'" onclick="markAtt(\''+s.id+'\',\'absent\')">❌ Absent</button>'+
-      '</div>'+
-    '</div>';
+      '</div></div>';
   }).join('');
 }
 
@@ -1000,10 +1019,11 @@ function createCampaign() {
   });
 }
 
-function deleteCampaign(id) {
-  if(!confirm('Delete karein?')) return;
-  db.collection('mad_campaigns').doc(id).delete().then(function(){ showToast('🗑️ Delete ho gaya!'); });
+function madDeleteCampaign(id) {
+  if(!confirm('Campaign delete karna chahte hain? Sab data chala jayega!')) return;
+  db.collection('mad_campaigns').doc(id).delete().then(function(){ showToast('🗑️ Campaign delete ho gaya!'); });
 }
+function deleteCampaign(id) { madDeleteCampaign(id); }
 
 function showChandaMembers(campId) {
   state.curCampId = campId;
@@ -1096,17 +1116,33 @@ function renderCommittee() {
   var el = document.getElementById('commList');
   if(!el) return;
   if(!state.committee.length){ el.innerHTML='<div class="empty-state" style="padding:20px;"><p>Koi committee member nahi.</p></div>'; return; }
-  el.innerHTML = state.committee.map(function(m){
-    return '<div class="comm-card">'+
-      '<div class="comm-ico">👤</div>'+
+  var roleOrder = ['Muhtamim','Nazim','Khazanchi','Katib','Nigran','Mushir','Aala_Chanda','Chanda_Member'];
+  var roleColors = {Muhtamim:'#8b0000',Nazim:'#0d2d5a',Khazanchi:'#1a6b3a',Katib:'#5a3a00',Nigran:'#1a4a6a',Mushir:'#4a1a6a',Aala_Chanda:'#8a6a00',Chanda_Member:'#1a4a8a'};
+  var roleLabels = {Muhtamim:'🏛️ Muhtamim (مہتمم)',Nazim:'📋 Nazim (ناظم)',Khazanchi:'💰 Khazanchi (خزانچی)',Katib:'✍️ Katib (کاتب)',Nigran:'👁️ Nigran (نگران)',Mushir:'🎓 Mushir (مشیر)',Aala_Chanda:'⭐ Aala Chanda',Chanda_Member:'💚 Chanda Member'};
+  var zimmedars = ['Muhtamim','Nazim','Khazanchi','Katib','Nigran','Mushir'];
+  var sorted = state.committee.slice().sort(function(a,b){ return (roleOrder.indexOf(a.role)+99||99)-(roleOrder.indexOf(b.role)+99||99); });
+  var html = ''; var lastType = null;
+  sorted.forEach(function(m){
+    var isZ = zimmedars.indexOf(m.role)>=0;
+    var curType = isZ?'z':'c';
+    if(curType!==lastType){
+      if(curType==='z') html+='<div style="font-size:11px;font-weight:700;color:#0d2d5a;padding:8px 0 4px;border-bottom:1px solid #d8dce8;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">👑 Zimmedaran — Committee</div>';
+      else html+='<div style="font-size:11px;font-weight:700;color:#1a4a8a;padding:10px 0 4px;border-bottom:1px solid #d8dce8;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">💚 Chanda Dene Wale Members</div>';
+      lastType=curType;
+    }
+    var color=roleColors[m.role]||'#1a4a8a';
+    var label=roleLabels[m.role]||m.role;
+    html+='<div class="comm-card" style="border-left:4px solid '+color+';margin-bottom:8px;">'+
+      '<div class="comm-ico" style="background:'+color+';">'+(isZ?'👤':'💚')+'</div>'+
       '<div class="comm-info">'+
         '<div class="comm-name">'+m.name+'</div>'+
-        '<div class="comm-role">'+m.role+(m.phone?' · '+maskPhone(m.phone):'')+'</div>'+
+        '<div class="comm-role" style="color:'+color+';font-weight:700;">'+label+(m.phone?' · '+maskPhone(m.phone):'')+'</div>'+
         (m.note?'<div style="font-size:10.5px;color:#7a8099;">'+m.note+'</div>':'')+
       '</div>'+
       (state.isAdmin?'<button class="comm-del" onclick="deleteComm(\''+m.id+'\')">🗑️</button>':'')+
     '</div>';
-  }).join('');
+  });
+  el.innerHTML = html;
 }
 
 function deleteComm(id) {
