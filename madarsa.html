@@ -4,243 +4,218 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0d2d5a">
-<title>Sonai Madarsa — Management System</title>
+<title>Sonai Madarsa</title>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
-/* ═══ ROOT ═══ */
-:root {
-  --b1:#05111f; --b2:#0d2d5a; --b3:#1a4a8a; --b4:#2563b0; --b5:#3b82f6;
-  --silver:#c0c8d8; --silver2:#dde3ef; --silver3:#f0f3f9;
-  --bg:#eef1f7; --card:#f8f9fc; --card2:#f0f3f9;
-  --text:#1a1a2e; --text2:#444; --muted:#7a8099;
-  --border:#d8dce8; --border2:#c8cde0;
-  --paid:#1a4a8a; --pending:#c0392b; --pending-bg:#fdf0ee;
-  --gold:#c9a84c; --gold2:#e8c86a;
-  --radius:16px; --radius2:12px; --radius3:8px;
-}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow-x:hidden;}
 body{font-family:'Poppins',sans-serif;background:#eef1f7;color:#1a1a2e;font-size:14px;line-height:1.5;}
 button{font-family:'Poppins',sans-serif;cursor:pointer;border:none;outline:none;}
 input,select,textarea{font-family:'Poppins',sans-serif;outline:none;}
 
-/* ═══ SPLASH ═══ */
-#splash{position:fixed;inset:0;z-index:9999;background:linear-gradient(160deg,#05111f 0%,#0d2d5a 50%,#1a4a8a 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s ease;}
-#splash .s-icon{font-size:72px;margin-bottom:18px;animation:pulse 2s infinite;}
-#splash .s-bismillah{font-family:'Amiri',serif;font-size:20px;color:#e8c86a;margin-bottom:8px;}
-#splash h1{font-family:'Amiri',serif;font-size:32px;color:#fff;font-weight:700;margin-bottom:4px;}
-#splash p{color:rgba(255,255,255,.6);font-size:12px;margin-bottom:36px;}
-.s-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.2);border-top-color:#e8c86a;border-radius:50%;animation:spin .9s linear infinite;}
+/* SPLASH */
+#splash{position:fixed;inset:0;z-index:9999;background:linear-gradient(160deg,#05111f 0%,#0d2d5a 50%,#1a4a8a 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s;}
+#splash .si{font-size:68px;margin-bottom:16px;animation:pulse 2s infinite;}
+#splash .sb{font-family:'Amiri',serif;font-size:20px;color:#e8c86a;margin-bottom:8px;}
+#splash h1{font-family:'Amiri',serif;font-size:30px;color:#fff;font-weight:700;margin-bottom:4px;}
+#splash p{color:rgba(255,255,255,.6);font-size:12px;margin-bottom:34px;}
+.spinner{width:38px;height:38px;border:3px solid rgba(255,255,255,.2);border-top-color:#e8c86a;border-radius:50%;animation:spin .9s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
 
-/* ═══ LOGIN ═══ */
+/* LOGIN */
 #loginOverlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
 #loginOverlay.show{display:flex;}
-.login-card{background:#f8f9fc;border-radius:24px;padding:32px 24px;width:92%;max-width:360px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.4);animation:slideUp .3s ease;}
-@keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-.login-card .lico{font-size:44px;margin-bottom:10px;}
-.login-card h2{font-family:'Amiri',serif;font-size:20px;color:#0d2d5a;margin-bottom:4px;}
-.login-card .bismillah-s{font-family:'Amiri',serif;color:#c9a84c;font-size:13px;margin-bottom:14px;}
-.login-card p{color:#7a8099;font-size:12px;margin-bottom:18px;line-height:1.6;}
-.pin-input{width:100%;padding:13px;border:2px solid #c8cde0;border-radius:12px;font-size:20px;text-align:center;letter-spacing:6px;background:#eef1f7;transition:border-color .2s;margin-bottom:8px;}
-.pin-input:focus{border-color:#1a4a8a;}
-.login-err{color:#c0392b;font-size:12px;margin-bottom:10px;display:none;}
-.btn-primary{width:100%;padding:13px;background:linear-gradient(135deg,#1a4a8a,#05111f);color:#fff;border-radius:12px;font-size:14px;font-weight:700;margin-bottom:8px;transition:opacity .2s;}
-.btn-primary:active{opacity:.85;}
-.btn-ghost{width:100%;padding:11px;background:transparent;color:#7a8099;border:1.5px solid #c8cde0;border-radius:12px;font-size:13px;font-weight:600;}
+.lcard{background:#f8f9fc;border-radius:22px;padding:30px 22px;width:92%;max-width:360px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.4);animation:su .3s ease;}
+@keyframes su{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.lcard .li{font-size:42px;margin-bottom:8px;}
+.lcard h2{font-family:'Amiri',serif;font-size:20px;color:#0d2d5a;margin-bottom:4px;}
+.lcard .lbs{font-family:'Amiri',serif;color:#c9a84c;font-size:13px;margin-bottom:12px;}
+.lcard p{color:#7a8099;font-size:12px;margin-bottom:16px;line-height:1.6;}
+.pin-inp{width:100%;padding:12px;border:2px solid #c8cde0;border-radius:10px;font-size:20px;text-align:center;letter-spacing:6px;background:#eef1f7;margin-bottom:8px;}
+.pin-inp:focus{border-color:#1a4a8a;}
+.lerr{color:#c0392b;font-size:12px;margin-bottom:10px;display:none;}
+.btn-p{width:100%;padding:12px;background:linear-gradient(135deg,#1a4a8a,#05111f);color:#fff;border-radius:10px;font-size:14px;font-weight:700;margin-bottom:8px;}
+.btn-g{width:100%;padding:10px;background:transparent;color:#7a8099;border:1.5px solid #c8cde0;border-radius:10px;font-size:13px;font-weight:600;}
 
-/* ═══ APP ═══ */
-#app{display:none;min-height:100vh;padding-bottom:80px;}
+/* APP */
+#app{display:none;min-height:100vh;padding-bottom:82px;}
 #app.show{display:block;}
 
-/* ═══ HEADER ═══ */
-.app-header{background:linear-gradient(160deg,#05111f 0%,#0d2d5a 50%,#1a4a8a 100%);padding:18px 16px 26px;position:relative;overflow:hidden;}
-.app-header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 20%,rgba(201,168,76,.12) 0%,transparent 60%);pointer-events:none;}
-.header-bismillah{font-family:'Amiri',serif;color:#e8c86a;font-size:14px;text-align:center;margin-bottom:8px;opacity:.9;}
-.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.header-logo{display:flex;align-items:center;gap:10px;}
-.header-logo .ico{font-size:30px;}
-.header-logo h1{font-family:'Amiri',serif;font-size:20px;color:#fff;font-weight:700;line-height:1.2;}
-.header-logo p{color:rgba(255,255,255,.6);font-size:11px;}
-.header-right{display:flex;align-items:center;gap:8px;}
-.badge{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:20px;}
-.badge-live{background:#25D366;color:#fff;}
-.badge-mode{background:rgba(255,255,255,.2);color:#fff;}
-.badge-admin{background:rgba(201,168,76,.85);color:#1a1a1a;}
-.switch-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;}
-.switch-btn:active{opacity:.8;}
-.hamburger{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;gap:5px;padding:6px;border-radius:8px;}
-.hamburger span{display:block;width:22px;height:2.5px;background:#fff;border-radius:4px;}
+/* HEADER */
+.hdr{background:linear-gradient(160deg,#05111f 0%,#0d2d5a 50%,#1a4a8a 100%);padding:16px 16px 24px;position:relative;overflow:hidden;}
+.hdr::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 20%,rgba(201,168,76,.12) 0%,transparent 60%);pointer-events:none;}
+.hbism{font-family:'Amiri',serif;color:#e8c86a;font-size:14px;text-align:center;margin-bottom:8px;opacity:.9;}
+.htop{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.hlogo{display:flex;align-items:center;gap:10px;}
+.hlogo .hi{font-size:28px;}
+.hlogo h1{font-family:'Amiri',serif;font-size:19px;color:#fff;font-weight:700;line-height:1.2;}
+.hlogo p{color:rgba(255,255,255,.6);font-size:10px;}
+.hright{display:flex;align-items:center;gap:8px;}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;}
+.blive{background:#25D366;color:#fff;}
+.bmode{background:rgba(255,255,255,.2);color:#fff;}
+.badm{background:rgba(201,168,76,.85);color:#1a1a1a;}
+.sw-btn{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;}
+.hmbg{background:none;border:none;display:flex;flex-direction:column;gap:5px;padding:5px;cursor:pointer;}
+.hmbg span{display:block;width:20px;height:2px;background:#fff;border-radius:4px;}
 
-/* ═══ PUBLIC STATS (visible to all) ═══ */
-.pub-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 16px;margin-top:-14px;position:relative;z-index:2;}
-.pstat{background:#f8f9fc;border-radius:12px;padding:14px 8px;text-align:center;border:1px solid #d8dce8;box-shadow:0 4px 20px rgba(0,0,0,.08);}
-.pstat .v{font-size:20px;font-weight:800;line-height:1;}
-.pstat .l{font-size:9.5px;color:#7a8099;margin-top:3px;font-weight:500;}
-.pstat.blue .v{color:#1a4a8a;}
-.pstat.green .v{color:#1a7a3a;}
-.pstat.red .v{color:#c0392b;}
+/* PUBLIC STATS */
+.pstats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 16px;margin-top:-14px;position:relative;z-index:2;}
+.pst{background:#f8f9fc;border-radius:12px;padding:13px 6px;text-align:center;border:1px solid #d8dce8;box-shadow:0 4px 16px rgba(0,0,0,.07);}
+.pst .v{font-size:20px;font-weight:800;line-height:1;}
+.pst .l{font-size:9px;color:#7a8099;margin-top:3px;font-weight:500;}
+.pst.blue .v{color:#1a4a8a;}
+.pst.green .v{color:#1a7a3a;}
+.pst.red .v{color:#c0392b;}
 
-/* ═══ NAV ═══ */
-.nav-bottom{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#f8f9fc;border-top:1px solid #d8dce8;display:flex;padding:6px 4px 10px;gap:2px;box-shadow:0 -4px 20px rgba(0,0,0,.08);}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:7px 2px;border-radius:12px;background:transparent;color:#7a8099;font-size:9.5px;font-weight:600;transition:all .2s;border:none;}
-.nav-btn .nico{font-size:18px;background:transparent !important;}
-.nav-btn.active{background:linear-gradient(135deg,#1a4a8a,#0d2d5a);color:#fff;}
-.admin-only{display:none !important;}
-.admin-only.show{display:flex !important;}
-.div-admin-only{display:none !important;}
-.div-admin-only.show{display:block !important;}
+/* NAV */
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#f8f9fc;border-top:1px solid #d8dce8;display:flex;padding:5px 2px 10px;gap:2px;box-shadow:0 -4px 20px rgba(0,0,0,.07);overflow-x:auto;}
+.nb{flex:1;min-width:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 2px;border-radius:10px;background:transparent;color:#7a8099;font-size:9px;font-weight:600;border:none;}
+.nb .ni{font-size:17px;background:transparent !important;}
+.nb.active{background:linear-gradient(135deg,#1a4a8a,#0d2d5a);color:#fff;}
+.ao{display:none !important;}
+.ao.show{display:flex !important;}
+.dao{display:none !important;}
+.dao.show{display:block !important;}
 
-/* ═══ PAGES ═══ */
-.page{display:none;padding:14px 16px 0;animation:fadeIn .25s ease;}
-.page.active{display:block;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+/* PAGES */
+.page{display:none;padding:14px 16px 0;}
+.page.active{display:block;animation:fi .25s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-/* ═══ SECTION TITLE ═══ */
-.sec-title{font-size:13px;font-weight:700;color:#0d2d5a;display:flex;align-items:center;gap:6px;margin-bottom:12px;}
-.sec-title::after{content:'';flex:1;height:1px;background:#d8dce8;}
+/* TITLES */
+.stitle{font-size:13px;font-weight:700;color:#0d2d5a;display:flex;align-items:center;gap:6px;margin-bottom:12px;}
+.stitle::after{content:'';flex:1;height:1px;background:#d8dce8;}
 
-/* ═══ CARDS ═══ */
-.card{background:#f8f9fc;border-radius:16px;border:1px solid #d8dce8;margin-bottom:10px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.06);}
-.card-body{padding:14px;}
+/* FORMS */
+.fbox{background:#f8f9fc;border-radius:14px;border:1.5px dashed #1a4a8a;padding:14px;margin-bottom:12px;}
+.fbox h4{font-size:13px;font-weight:700;color:#0d2d5a;margin-bottom:10px;}
+.fi{width:100%;padding:10px 13px;border:1.5px solid #c8cde0;border-radius:8px;font-size:13px;background:#eef1f7;color:#1a1a2e;margin-bottom:8px;}
+.fi:focus{border-color:#1a4a8a;outline:none;}
+.sbtn{width:100%;padding:12px;background:linear-gradient(135deg,#1a4a8a,#05111f);color:#fff;border-radius:8px;font-size:13px;font-weight:700;margin-top:4px;}
+.sbtn:active{opacity:.85;}
+.sbtn.red{background:linear-gradient(135deg,#c0392b,#7b241c);}
+.sbtn.gold{background:linear-gradient(135deg,#c9a84c,#a07820);}
+.sbtn.green{background:linear-gradient(135deg,#1a7a3a,#0a3015);}
 
-/* ═══ STUDENT CARD ═══ */
-.student-card{background:#f8f9fc;border-radius:12px;border:1px solid #d8dce8;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
-.student-card.paid-card{border-left:3px solid #1a4a8a;}
-.student-card.pending-card{border-left:3px solid #c0392b;}
-.stu-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0;}
-.stu-info{flex:1;min-width:0;}
-.stu-name{font-size:13px;font-weight:700;color:#1a1a2e;}
-.stu-class{font-size:11px;color:#7a8099;margin-top:1px;}
-.stu-fees{font-size:11px;font-weight:600;color:#7a8099;margin-top:2px;}
-.stu-actions{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
-.fees-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;border:none;cursor:pointer;}
-.fees-badge.paid{background:#dde8f7;color:#1a4a8a;}
-.fees-badge.pending{background:#fdf0ee;color:#c0392b;}
-.edit-btn-sm{padding:4px 8px;border-radius:8px;font-size:10px;font-weight:600;background:#eef1f7;color:#7a8099;border:1px solid #d8dce8;}
+/* STUDENT CARD */
+.scard{background:#f8f9fc;border-radius:12px;border:1px solid #d8dce8;padding:11px;margin-bottom:8px;display:flex;align-items:center;gap:11px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.scard.paid-c{border-left:3px solid #1a4a8a;}
+.scard.pend-c{border-left:3px solid #c0392b;}
+.sav{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;}
+.si2{flex:1;min-width:0;}
+.sname{font-size:13px;font-weight:700;color:#1a1a2e;}
+.sclass{font-size:11px;color:#7a8099;margin-top:1px;}
+.sfees{font-size:11px;font-weight:600;color:#7a8099;margin-top:1px;}
+.sacts{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+.fbadge{padding:4px 9px;border-radius:20px;font-size:10.5px;font-weight:700;border:none;cursor:pointer;}
+.fbadge.paid{background:#dde8f7;color:#1a4a8a;}
+.fbadge.pend{background:#fdf0ee;color:#c0392b;}
+.esm{padding:4px 8px;border-radius:7px;font-size:10px;font-weight:600;background:#eef1f7;color:#7a8099;border:1px solid #d8dce8;}
+.esm.del{background:#fdecea;color:#c0392b;border-color:#f5c6c2;}
 
-/* ═══ FORMS ═══ */
-.form-box{background:#f8f9fc;border-radius:16px;border:1.5px dashed #1a4a8a;padding:16px;margin-bottom:14px;}
-.form-box h4{font-size:13px;font-weight:700;color:#0d2d5a;margin-bottom:12px;}
-.fi{width:100%;padding:11px 14px;border:1.5px solid #c8cde0;border-radius:8px;font-size:13px;background:#eef1f7;color:#1a1a2e;transition:border-color .2s;margin-bottom:8px;}
-.fi:focus{border-color:#1a4a8a;}
-.fi-row{display:flex;gap:8px;margin-bottom:8px;}
-.fi-row .fi{margin-bottom:0;}
-.submit-btn{width:100%;padding:12px;background:linear-gradient(135deg,#1a4a8a,#05111f);color:#fff;border-radius:8px;font-size:13px;font-weight:700;margin-top:4px;transition:opacity .2s;}
-.submit-btn:active{opacity:.85;}
-.submit-btn.red{background:linear-gradient(135deg,#c0392b,#7b241c);}
-.submit-btn.gold{background:linear-gradient(135deg,#c9a84c,#a07820);}
-.submit-btn.green{background:linear-gradient(135deg,#1a7a3a,#0a3015);}
-
-/* ═══ ATTENDANCE ═══ */
-.att-card{background:#f8f9fc;border-radius:12px;border:1px solid #d8dce8;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
-.att-name{font-size:13px;font-weight:600;color:#1a1a2e;}
-.att-class{font-size:10.5px;color:#7a8099;}
-.att-btns{display:flex;gap:6px;}
-.att-btn{padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;border:none;cursor:pointer;}
-.att-btn.present{background:#dde8f7;color:#1a4a8a;}
-.att-btn.absent{background:#fdf0ee;color:#c0392b;}
-.att-btn.sel-present{background:#1a4a8a;color:#fff;}
-.att-btn.sel-absent{background:#c0392b;color:#fff;}
-
-/* ═══ COMMITTEE ═══ */
-.comm-card{background:#f8f9fc;border-radius:12px;border:1px solid #d8dce8;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
-.comm-ico{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#c9a84c,#a07820);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-.comm-info{flex:1;}
-.comm-name{font-size:13px;font-weight:700;color:#1a1a2e;}
-.comm-role{font-size:11px;color:#7a8099;}
-.comm-del{background:#fdf0ee;color:#c0392b;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;}
-
-/* ═══ CAMPAIGN CARDS ═══ */
-.camp-card{background:#f8f9fc;border-radius:16px;border:1px solid #d8dce8;margin-bottom:12px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.06);}
-.camp-header{padding:14px 16px 10px;}
-.camp-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
-.camp-ico-box{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#1a4a8a,#05111f);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
-.camp-name{font-size:14px;font-weight:700;color:#1a1a2e;}
-.camp-desc{font-size:11px;color:#7a8099;margin-top:2px;}
-.camp-status-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;}
-.camp-status-badge.active{background:#dde8f7;color:#1a4a8a;}
-.camp-status-badge.done{background:#e8e4d8;color:#888;}
-.prog-bar{height:7px;background:#e0e4f0;border-radius:10px;overflow:hidden;margin-bottom:5px;}
-.prog-fill{height:100%;background:linear-gradient(90deg,#1a4a8a,#c9a84c);border-radius:10px;transition:width .6s ease;}
-.prog-label{display:flex;justify-content:space-between;font-size:10px;color:#7a8099;}
-.camp-nums{display:flex;gap:6px;margin-top:10px;}
-.camp-num{flex:1;background:#eef1f7;border-radius:8px;padding:8px 4px;text-align:center;}
-.camp-num .v{font-size:13px;font-weight:800;color:#1a4a8a;}
-.camp-num .l{font-size:9px;color:#7a8099;margin-top:1px;}
-.camp-actions{display:flex;gap:6px;padding:0 16px 14px;}
-.camp-btn{flex:1;padding:8px;border-radius:8px;font-size:11.5px;font-weight:700;}
-.camp-btn.view{background:#dde8f7;color:#1a4a8a;}
-.camp-btn.toggle{background:#fff3e0;color:#b85c00;}
-.camp-btn.del{background:#fdecea;color:#c0392b;}
-
-/* ═══ ANNOUNCEMENT ═══ */
-.ann-card{background:#f0f5ff;border-radius:12px;border:1.5px solid #c0d0f0;padding:12px;margin-bottom:8px;}
-.ann-title{font-size:13px;font-weight:700;color:#0d2d5a;margin-bottom:4px;}
-.ann-body{font-size:12px;color:#444;line-height:1.6;}
-.ann-date{font-size:10px;color:#7a8099;margin-top:6px;}
-.ann-del{float:right;background:none;border:none;color:#c0392b;font-size:16px;padding:0;cursor:pointer;}
-
-/* ═══ EXPENSE ═══ */
-.expense-card{background:#f8f9fc;border-radius:12px;border:1px solid #d8dce8;border-left:3px solid #c0392b;padding:12px;margin-bottom:8px;}
-.expense-title{font-size:13px;font-weight:700;color:#1a1a2e;}
-.expense-amount{font-size:14px;font-weight:800;color:#c0392b;margin-top:2px;}
-.expense-date{font-size:10px;color:#7a8099;margin-top:2px;}
-
-/* ═══ MODAL ═══ */
-.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
-.modal-overlay.show{display:flex;}
-.modal-box{background:#f8f9fc;border-radius:16px;padding:22px 18px;width:94%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.3);animation:slideUp .3s ease;}
-.modal-title{font-size:15px;font-weight:700;color:#0d2d5a;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
-.modal-close{background:#eef1f7;border:none;border-radius:50%;width:28px;height:28px;font-size:15px;display:flex;align-items:center;justify-content:center;color:#7a8099;cursor:pointer;}
-
-/* ═══ SIDEBAR ═══ */
-.sidebar-overlay{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.55);display:none;backdrop-filter:blur(3px);}
-.sidebar-overlay.show{display:block;}
-.sidebar{position:fixed;top:0;right:-280px;bottom:0;width:280px;z-index:900;background:#f8f9fc;box-shadow:-8px 0 32px rgba(0,0,0,.2);transition:right .3s ease;display:flex;flex-direction:column;overflow-y:auto;}
-.sidebar.show{right:0;}
-.sidebar-head{background:linear-gradient(135deg,#05111f,#1a4a8a);padding:22px 18px 18px;color:#fff;}
-.sidebar-head .sb-title{font-family:'Amiri',serif;font-size:18px;font-weight:700;}
-.sidebar-head .sb-sub{font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;}
-.sidebar-head .sb-mode{font-size:11px;color:#e8c86a;margin-top:6px;font-weight:600;}
-.sidebar-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.sb-section{padding:10px 0;border-bottom:1px solid #d8dce8;}
-.sb-section-title{font-size:10px;font-weight:700;color:#7a8099;padding:0 18px 7px;text-transform:uppercase;letter-spacing:.8px;}
-.sb-item{display:flex;align-items:center;gap:12px;padding:11px 18px;font-size:13px;font-weight:600;color:#1a1a2e;cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:'Poppins',sans-serif;}
-.sb-item:active{background:#eef1f7;}
-.sb-item .sb-ico{font-size:18px;width:26px;text-align:center;}
-.sb-item.red .sb-label{color:#c0392b;}
-.sb-footer{padding:14px 18px;margin-top:auto;}
-.sb-version{font-size:10px;color:#c8cde0;text-align:center;}
-
-/* ═══ TOAST & SAVE ═══ */
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(60px);background:#1a1a2e;color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:600;z-index:999;transition:transform .3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.3);}
-.toast.show{transform:translateX(-50%) translateY(0);}
-.save-ind{position:fixed;top:12px;right:14px;z-index:200;background:#1a4a8a;color:#fff;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;opacity:0;transition:opacity .3s;}
-.save-ind.show{opacity:1;}
-
-/* ═══ SUMMARY BOX ═══ */
-.summary-box{background:linear-gradient(135deg,#0d2d5a,#05111f);border-radius:16px;padding:16px;margin-bottom:14px;color:#fff;display:flex;justify-content:space-between;}
-.summary-item{text-align:center;}
-.summary-item .sv{font-size:17px;font-weight:800;}
-.summary-item .sl{font-size:9.5px;opacity:.75;margin-top:2px;}
-.summary-item .sv.gold{color:#e8c86a;}
-.summary-item .sv.red{color:#f1948a;}
-
-/* ═══ EMPTY STATE ═══ */
-.empty-state{text-align:center;padding:36px 20px;color:#7a8099;}
-.empty-state .eico{font-size:44px;margin-bottom:10px;}
-.empty-state p{font-size:13px;}
-
-/* ═══ FILTER TABS ═══ */
-.filter-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;}
-.ftab{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;background:#f8f9fc;color:#7a8099;border:1.5px solid #d8dce8;flex-shrink:0;}
+/* FILTER TABS */
+.ftabs{display:flex;gap:5px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;}
+.ftab{padding:6px 13px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap;background:#f8f9fc;color:#7a8099;border:1.5px solid #d8dce8;flex-shrink:0;cursor:pointer;}
 .ftab.active{background:#1a4a8a;color:#fff;border-color:#1a4a8a;}
+
+/* ATTENDANCE */
+.acard{background:#f8f9fc;border-radius:10px;border:1px solid #d8dce8;padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;}
+.aname{font-size:12.5px;font-weight:600;color:#1a1a2e;}
+.acls{font-size:10.5px;color:#7a8099;}
+.abtns{display:flex;gap:5px;}
+.abtn{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;border:none;cursor:pointer;font-family:'Poppins',sans-serif;}
+.abtn.p{background:#e8f5ee;color:#1a7a3a;}
+.abtn.a{background:#fdf0ee;color:#c0392b;}
+.abtn.sp{background:#1a7a3a;color:#fff;}
+.abtn.sa{background:#c0392b;color:#fff;}
+
+/* COMMITTEE */
+.ccard{background:#f8f9fc;border-radius:12px;border:1px solid #d8dce8;padding:11px;margin-bottom:8px;display:flex;align-items:center;gap:11px;}
+.cico{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.cinfo{flex:1;}
+.cname{font-size:13px;font-weight:700;color:#1a1a2e;}
+.crole{font-size:11px;font-weight:600;margin-top:1px;}
+.cnote{font-size:10.5px;color:#7a8099;margin-top:2px;}
+.cdel{background:#fdf0ee;color:#c0392b;border-radius:7px;padding:5px 9px;font-size:11px;font-weight:700;border:none;cursor:pointer;}
+
+/* CAMPAIGN */
+.cpcard{background:#f8f9fc;border-radius:14px;border:1px solid #d8dce8;margin-bottom:11px;overflow:hidden;box-shadow:0 3px 14px rgba(0,0,0,.06);}
+.cphdr{padding:13px 15px 10px;}
+.cptop{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+.cpico{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,#1a4a8a,#05111f);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.cpname{font-size:14px;font-weight:700;color:#1a1a2e;}
+.cpdesc{font-size:11px;color:#7a8099;margin-top:2px;}
+.cpbadge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;background:#dde8f7;color:#1a4a8a;white-space:nowrap;}
+.pbar{height:7px;background:#e0e4f0;border-radius:10px;overflow:hidden;margin-bottom:5px;}
+.pfill{height:100%;background:linear-gradient(90deg,#1a4a8a,#c9a84c);border-radius:10px;}
+.plbl{display:flex;justify-content:space-between;font-size:10px;color:#7a8099;}
+.cpnums{display:flex;gap:6px;margin-top:10px;}
+.cpnum{flex:1;background:#eef1f7;border-radius:7px;padding:7px 3px;text-align:center;}
+.cpnum .v{font-size:13px;font-weight:800;color:#1a4a8a;}
+.cpnum .l{font-size:9px;color:#7a8099;margin-top:1px;}
+.cpacts{display:flex;gap:6px;padding:0 15px 12px;}
+.cpbtn{flex:1;padding:8px;border-radius:7px;font-size:11px;font-weight:700;border:none;cursor:pointer;font-family:'Poppins',sans-serif;}
+.cpbtn.view{background:#dde8f7;color:#1a4a8a;}
+.cpbtn.del{background:#fdecea;color:#c0392b;}
+
+/* KHARCHA */
+.excard{background:#f8f9fc;border-radius:11px;border:1px solid #d8dce8;border-left:3px solid #c0392b;padding:11px;margin-bottom:8px;}
+.extitle{font-size:13px;font-weight:700;color:#1a1a2e;}
+.examount{font-size:14px;font-weight:800;color:#c0392b;margin-top:2px;}
+.exdate{font-size:10px;color:#7a8099;margin-top:2px;}
+
+/* ANNOUNCEMENT */
+.ancard{background:#f0f5ff;border-radius:11px;border:1.5px solid #c0d0f0;padding:11px;margin-bottom:8px;}
+.antitle{font-size:13px;font-weight:700;color:#0d2d5a;margin-bottom:3px;}
+.anbody{font-size:12px;color:#444;line-height:1.6;}
+.andate{font-size:10px;color:#7a8099;margin-top:5px;}
+
+/* SUMMARY */
+.sumbox{background:linear-gradient(135deg,#0d2d5a,#05111f);border-radius:14px;padding:15px;margin-bottom:13px;color:#fff;display:flex;justify-content:space-between;}
+.sumi{text-align:center;}
+.sumi .sv{font-size:17px;font-weight:800;}
+.sumi .sl{font-size:9px;opacity:.7;margin-top:2px;}
+.sumi .sv.g{color:#e8c86a;}
+.sumi .sv.r{color:#f1948a;}
+
+/* MODAL */
+.mo{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.mo.show{display:flex;}
+.mbox{background:#f8f9fc;border-radius:16px;padding:20px 18px;width:94%;max-width:400px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.3);animation:su .3s ease;}
+.mtitle{font-size:15px;font-weight:700;color:#0d2d5a;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.mclose{background:#eef1f7;border:none;border-radius:50%;width:28px;height:28px;font-size:14px;display:flex;align-items:center;justify-content:center;color:#7a8099;cursor:pointer;}
+
+/* SIDEBAR */
+.sbov{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.55);display:none;backdrop-filter:blur(3px);}
+.sbov.show{display:block;}
+.sb{position:fixed;top:0;right:-280px;bottom:0;width:280px;z-index:900;background:#f8f9fc;box-shadow:-8px 0 32px rgba(0,0,0,.2);transition:right .3s;display:flex;flex-direction:column;overflow-y:auto;}
+.sb.show{right:0;}
+.sbhd{background:linear-gradient(135deg,#05111f,#1a4a8a);padding:22px 18px 18px;color:#fff;}
+.sbhd .sbt{font-family:'Amiri',serif;font-size:18px;font-weight:700;}
+.sbhd .sbs{font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;}
+.sbhd .sbm{font-size:11px;color:#e8c86a;margin-top:6px;font-weight:600;}
+.sbcl{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.sbsec{padding:10px 0;border-bottom:1px solid #d8dce8;}
+.sbst{font-size:10px;font-weight:700;color:#7a8099;padding:0 18px 7px;text-transform:uppercase;letter-spacing:.8px;}
+.sbi{display:flex;align-items:center;gap:12px;padding:11px 18px;font-size:13px;font-weight:600;color:#1a1a2e;border:none;background:none;width:100%;text-align:left;font-family:'Poppins',sans-serif;cursor:pointer;}
+.sbi:active{background:#eef1f7;}
+.sbi .sic{font-size:18px;width:25px;text-align:center;}
+.sbi.red .sbl{color:#c0392b;}
+
+/* MISC */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(60px);background:#1a1a2e;color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:600;z-index:999;transition:transform .3s;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.sind{position:fixed;top:12px;right:14px;z-index:200;background:#1a4a8a;color:#fff;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;opacity:0;transition:opacity .3s;}
+.sind.show{opacity:1;}
+.empty{text-align:center;padding:32px 20px;color:#7a8099;}
+.empty .ei{font-size:42px;margin-bottom:10px;}
+.empty p{font-size:13px;}
 .file-hidden{display:none;}
-::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar{width:3px;}
 ::-webkit-scrollbar-thumb{background:#c8cde0;border-radius:4px;}
 </style>
 </head>
@@ -248,295 +223,256 @@ input,select,textarea{font-family:'Poppins',sans-serif;outline:none;}
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-icon">📚</div>
-  <div class="s-bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+  <div class="si">📚</div>
+  <div class="sb2" style="font-family:'Amiri',serif;font-size:20px;color:#e8c86a;margin-bottom:8px;">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
   <h1>Sonai Madarsa</h1>
   <p>Management System</p>
-  <div class="s-spinner"></div>
+  <div class="spinner"></div>
 </div>
 
 <!-- LOGIN -->
 <div id="loginOverlay">
-  <div class="login-card">
-    <div class="lico">📚</div>
-    <div class="bismillah-s">بِسْمِ اللَّهِ</div>
+  <div class="lcard">
+    <div class="li">📚</div>
+    <div class="lbs">بِسْمِ اللَّهِ</div>
     <h2>Sonai Madarsa</h2>
-    <p>Admin ya Teacher ho to PIN daalo.<br>Dekhne ke liye neeche click karo.</p>
-    <input type="password" class="pin-input" id="pinInput" placeholder="••••••" maxlength="20" onkeydown="if(event.key==='Enter')doLogin()"/>
-    <div class="login-err" id="loginErr">❌ Galat PIN! Dobara try karo.</div>
-    <button class="btn-primary" onclick="doLogin()">🔐 Login</button>
-    <button class="btn-ghost" onclick="doView()">👁️ Sirf Dekhna Hai</button>
+    <p>Admin ya Teacher ho to PIN daalo.<br>Sirf dekhne ke liye neeche click karo.</p>
+    <input type="password" class="pin-inp" id="pinInput" placeholder="••••••" maxlength="20" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <div class="lerr" id="loginErr">❌ Galat PIN! Dobara try karo.</div>
+    <button class="btn-p" onclick="doLogin()">🔐 Login</button>
+    <button class="btn-g" onclick="doView()">👁️ Sirf Dekhna Hai</button>
   </div>
 </div>
 
-<!-- ADD STUDENT MODAL -->
-<div class="modal-overlay" id="addStudentModal">
-  <div class="modal-box">
-    <div class="modal-title">👤 Naya Student
-      <button class="modal-close" onclick="closeModal('addStudentModal')">✕</button>
-    </div>
-    <input class="fi" type="text" id="sName" placeholder="Student ka Naam *"/>
+<!-- MODALS -->
+<div class="mo" id="mAddStu">
+  <div class="mbox">
+    <div class="mtitle">👤 Naya Student <button class="mclose" onclick="cm('mAddStu')">✕</button></div>
+    <input class="fi" type="text" id="sName" placeholder="Naam *"/>
     <input class="fi" type="number" id="sAge" placeholder="Umar (Age)"/>
-    <input class="fi" type="text" id="sClass" placeholder="Class/Marhala (e.g. Qaida, Para, Quran, Urdu) *" list="classSuggestions"/>
-    <datalist id="classSuggestions" id="classSuggestDl"></datalist>
+    <input class="fi" type="text" id="sClass" placeholder="Marhala/Class (e.g. Qaida, Nazra, Para, Quran) *" id="sClassInp" list="clsDl"/>
+    <datalist id="clsDl"></datalist>
     <input class="fi" type="text" id="sGuardian" placeholder="Wali ka Naam *"/>
     <input class="fi" type="tel" id="sPhone" placeholder="Wali ka Phone Number"/>
-    <input class="fi" type="number" id="sFees" placeholder="Monthly Fees ₹ (0 = free)"/>
-    <button class="submit-btn" onclick="addStudent()">✅ Add Karo</button>
+    <input class="fi" type="number" id="sFees" placeholder="Monthly Fees ₹ (0 = muft/free)"/>
+    <button class="sbtn" onclick="addStudent()">✅ Add Karo</button>
   </div>
 </div>
 
-<!-- EDIT STUDENT MODAL -->
-<div class="modal-overlay" id="editStudentModal">
-  <div class="modal-box">
-    <div class="modal-title">✏️ Student Edit
-      <button class="modal-close" onclick="closeModal('editStudentModal')">✕</button>
-    </div>
+<div class="mo" id="mEditStu">
+  <div class="mbox">
+    <div class="mtitle">✏️ Student Edit <button class="mclose" onclick="cm('mEditStu')">✕</button></div>
     <input class="fi" type="text" id="eSName" placeholder="Naam"/>
     <input class="fi" type="number" id="eSAge" placeholder="Umar"/>
-    <input class="fi" type="text" id="eSClass" placeholder="Class/Marhala" list="classSuggestions"/>
+    <input class="fi" type="text" id="eSClass" placeholder="Marhala/Class" list="clsDl"/>
     <input class="fi" type="text" id="eSGuardian" placeholder="Wali ka Naam"/>
     <input class="fi" type="tel" id="eSPhone" placeholder="Phone"/>
     <input class="fi" type="number" id="eSFees" placeholder="Monthly Fees ₹"/>
-    <input type="hidden" id="eSIdx"/>
-    <button class="submit-btn" onclick="saveStudentEdit()">💾 Save</button>
+    <input type="hidden" id="eSId"/>
+    <button class="sbtn" onclick="saveEditStu()">💾 Save</button>
   </div>
 </div>
 
-<!-- ADD COMMITTEE MODAL -->
-<div class="modal-overlay" id="addCommModal">
-  <div class="modal-box">
-    <div class="modal-title">👥 Committee Member Add
-      <button class="modal-close" onclick="closeModal('addCommModal')">✕</button>
-    </div>
+<div class="mo" id="mAddComm">
+  <div class="mbox">
+    <div class="mtitle">👥 Member Add <button class="mclose" onclick="cm('mAddComm')">✕</button></div>
     <input class="fi" type="text" id="cName" placeholder="Naam *"/>
     <input class="fi" type="tel" id="cPhone" placeholder="Phone Number"/>
     <select class="fi" id="cRole">
       <optgroup label="── Zimmedaran (Committee) ──">
-        <option value="Muhtamim">Muhtamim (مہتمم) — Incharge</option>
-        <option value="Nazim">Nazim (ناظم) — Organizer</option>
-        <option value="Khazanchi">Khazanchi (خزانچی) — Treasurer</option>
-        <option value="Katib">Katib (کاتب) — Secretary</option>
-        <option value="Nigran">Nigran (نگران) — Supervisor</option>
-        <option value="Mushir">Mushir (مشیر) — Advisor</option>
+        <option value="Muhtamim">🏛️ Muhtamim (مہتمم) — Incharge</option>
+        <option value="Nazim">📋 Nazim (ناظم) — Organizer</option>
+        <option value="Khazanchi">💰 Khazanchi (خزانچی) — Treasurer</option>
+        <option value="Katib">✍️ Katib (کاتب) — Secretary</option>
+        <option value="Nigran">👁️ Nigran (نگران) — Supervisor</option>
+        <option value="Mushir">🎓 Mushir (مشیر) — Advisor</option>
       </optgroup>
       <optgroup label="── Chanda Dene Wale ──">
-        <option value="Chanda_Member">Chanda Member (چندہ ممبر)</option>
-        <option value="Aala_Chanda">Aala Chanda (اعلیٰ چندہ)</option>
+        <option value="Chanda_Member">💚 Chanda Member (عام ممبر)</option>
+        <option value="Aala_Chanda">⭐ Aala Chanda (اعلیٰ ممبر)</option>
       </optgroup>
     </select>
+    <input class="fi" type="number" id="cChanda" placeholder="Chanda Amount ₹ (optional)"/>
     <input class="fi" type="text" id="cNote" placeholder="Note (optional)"/>
-    <button class="submit-btn gold" onclick="addCommMember()">✅ Add Karo</button>
+    <button class="sbtn gold" onclick="addCommMember()">✅ Add Karo</button>
   </div>
 </div>
 
-<!-- ADD TEACHER MODAL -->
-<div class="modal-overlay" id="addTeacherModal">
-  <div class="modal-box">
-    <div class="modal-title">👨‍🏫 Teacher Add
-      <button class="modal-close" onclick="closeModal('addTeacherModal')">✕</button>
-    </div>
+<div class="mo" id="mAddTeacher">
+  <div class="mbox">
+    <div class="mtitle">👨‍🏫 Teacher Add <button class="mclose" onclick="cm('mAddTeacher')">✕</button></div>
     <input class="fi" type="text" id="tName" placeholder="Teacher ka Naam *"/>
     <input class="fi" type="tel" id="tPhone" placeholder="Phone Number"/>
-    <select class="fi" id="tSubject">
-      <option value="">Subject Select Karo</option>
-      <option>Hindi</option><option>English</option><option>Math</option>
-      <option>Nazra</option><option>Alim</option><option>Darja</option>
-      <option>Quran</option><option>Urdu</option><option>All Subjects</option>
-    </select>
+    <input class="fi" type="text" id="tSubject" placeholder="Subject (e.g. Quran, Urdu, Math)"/>
     <input class="fi" type="number" id="tSalary" placeholder="Monthly Salary ₹"/>
     <input class="fi" type="text" id="tPin" placeholder="Teacher PIN (login ke liye) *" maxlength="20"/>
-    <button class="submit-btn" onclick="addTeacher()">✅ Add Karo</button>
+    <button class="sbtn" onclick="addTeacher()">✅ Add Karo</button>
   </div>
 </div>
 
-<!-- ADD ANNOUNCEMENT MODAL -->
-<div class="modal-overlay" id="addAnnModal">
-  <div class="modal-box">
-    <div class="modal-title">📢 Announcement
-      <button class="modal-close" onclick="closeModal('addAnnModal')">✕</button>
-    </div>
+<div class="mo" id="mAddAnn">
+  <div class="mbox">
+    <div class="mtitle">📢 Naya Notice <button class="mclose" onclick="cm('mAddAnn')">✕</button></div>
     <input class="fi" type="text" id="annTitle" placeholder="Title *"/>
     <textarea class="fi" id="annBody" rows="4" placeholder="Message *" style="resize:vertical;min-height:80px;"></textarea>
-    <button class="submit-btn" onclick="addAnnouncement()">📢 Post Karo</button>
+    <button class="sbtn" onclick="addAnn()">📢 Post Karo</button>
   </div>
 </div>
 
-<!-- ADD CAMPAIGN MODAL -->
-<div class="modal-overlay" id="addCampModal">
-  <div class="modal-box">
-    <div class="modal-title">🆕 Naya Campaign
-      <button class="modal-close" onclick="closeModal('addCampModal')">✕</button>
-    </div>
+<div class="mo" id="mAddCamp">
+  <div class="mbox">
+    <div class="mtitle">💰 Naya Campaign <button class="mclose" onclick="cm('mAddCamp')">✕</button></div>
     <input class="fi" type="text" id="ncName" placeholder="Campaign Naam *"/>
-    <input class="fi" type="text" id="ncDesc" placeholder="Description (optional)"/>
-    <input class="fi" type="number" id="ncTarget" placeholder="Target Amount ₹"/>
-    <button class="submit-btn" onclick="createCampaign()">✅ Banao</button>
+    <input class="fi" type="text" id="ncDesc" placeholder="Description"/>
+    <input class="fi" type="number" id="ncTarget" placeholder="Target ₹"/>
+    <button class="sbtn" onclick="addCampaign()">✅ Banao</button>
   </div>
 </div>
 
-<!-- ADD CHANDA MEMBER MODAL -->
-<div class="modal-overlay" id="addChandaMemberModal">
-  <div class="modal-box">
-    <div class="modal-title">➕ Chanda Member Add
-      <button class="modal-close" onclick="closeModal('addChandaMemberModal')">✕</button>
-    </div>
+<div class="mo" id="mAddCMember">
+  <div class="mbox">
+    <div class="mtitle">➕ Chanda Member <button class="mclose" onclick="cm('mAddCMember')">✕</button></div>
     <input class="fi" type="text" id="cmName" placeholder="Naam *"/>
-    <input class="fi" type="tel" id="cmPhone" placeholder="Phone Number"/>
-    <input class="fi" type="number" id="cmAmount" placeholder="Amount ₹ *"/>
-    <button class="submit-btn" onclick="addChandaMember()">✅ Add Karo</button>
+    <input class="fi" type="tel" id="cmPhone" placeholder="Phone"/>
+    <input class="fi" type="number" id="cmAmt" placeholder="Amount ₹ *"/>
+    <button class="sbtn" onclick="addCMember()">✅ Add</button>
   </div>
 </div>
 
-<!-- SIDEBAR OVERLAY -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-<div class="sidebar" id="sidebar">
-  <button class="sidebar-close" onclick="closeSidebar()">✕</button>
-  <div class="sidebar-head">
-    <div class="sb-title">📚 Sonai Madarsa</div>
-    <div class="sb-sub">Management System</div>
-    <div class="sb-mode" id="sbMode">👁️ View Mode</div>
+<!-- SIDEBAR -->
+<div class="sbov" id="sbOv" onclick="closeSB()"></div>
+<div class="sb" id="sbPanel">
+  <button class="sbcl" onclick="closeSB()">✕</button>
+  <div class="sbhd">
+    <div class="sbt">📚 Sonai Madarsa</div>
+    <div class="sbs">Management System</div>
+    <div class="sbm" id="sbMode">👁️ View Mode</div>
   </div>
-  <div class="sb-section">
-    <div class="sb-section-title">Navigation</div>
-    <button class="sb-item" onclick="sbGo(0)"><span class="sb-ico">🏠</span><span class="sb-label">Home</span></button>
-    <button class="sb-item" onclick="sbGo(1)"><span class="sb-ico">👤</span><span class="sb-label">Students</span></button>
-    <button class="sb-item" onclick="sbGo(2)"><span class="sb-ico">✅</span><span class="sb-label">Attendance</span></button>
-    <button class="sb-item" onclick="sbGo(3)"><span class="sb-ico">💰</span><span class="sb-label">Chanda</span></button>
-    <button class="sb-item" onclick="sbGo(4)"><span class="sb-ico">💸</span><span class="sb-label">Kharcha</span></button>
+  <div class="sbsec">
+    <div class="sbst">Navigation</div>
+    <button class="sbi" onclick="sbGo(0)"><span class="sic">🏠</span><span class="sbl">Home</span></button>
+    <button class="sbi" onclick="sbGo(1)"><span class="sic">👤</span><span class="sbl">Students</span></button>
+    <button class="sbi" onclick="sbGo(2)"><span class="sic">✅</span><span class="sbl">Hazri</span></button>
+    <button class="sbi" onclick="sbGo(3)"><span class="sic">💰</span><span class="sbl">Chanda</span></button>
+    <button class="sbi" onclick="sbGo(4)"><span class="sic">💸</span><span class="sbl">Kharcha</span></button>
+    <button class="sbi" onclick="sbGo(5)"><span class="sic">👥</span><span class="sbl">Committee</span></button>
+    <button class="sbi" onclick="sbGo(6)"><span class="sic">👨‍🏫</span><span class="sbl">Teachers</span></button>
+    <button class="sbi" onclick="sbGo(7)"><span class="sic">📢</span><span class="sbl">Notice</span></button>
   </div>
-  <div class="sb-section">
-    <div class="sb-section-title">Admin</div>
-    <button class="sb-item" onclick="sbGo(5)"><span class="sb-ico">👥</span><span class="sb-label">Committee</span></button>
-    <button class="sb-item" onclick="sbGo(6)"><span class="sb-ico">👨‍🏫</span><span class="sb-label">Teachers</span></button>
-    <button class="sb-item" onclick="sbGo(7)"><span class="sb-ico">📢</span><span class="sb-label">Announcements</span></button>
+  <div class="sbsec">
+    <div class="sbst">Switch</div>
+    <button class="sbi" onclick="location.href='masjid.html'"><span class="sic">🕌</span><span class="sbl">Masjid Pe Jao</span></button>
+    <button class="sbi red" onclick="doLogout()"><span class="sic">🚪</span><span class="sbl">Logout</span></button>
   </div>
-  <div class="sb-section">
-    <div class="sb-section-title">Switch</div>
-    <button class="sb-item" onclick="goMasjid()"><span class="sb-ico">🕌</span><span class="sb-label">Masjid Pe Jao</span></button>
-    <button class="sb-item red" onclick="doLogout()"><span class="sb-ico">🚪</span><span class="sb-label">Logout</span></button>
-  </div>
-  <div class="sb-footer"><div class="sb-version">Sonai Madarsa v1.0</div></div>
+  <div style="padding:14px 18px;margin-top:auto;font-size:10px;color:#c8cde0;text-align:center;">Sonai Madarsa v1.0</div>
 </div>
 
-<!-- TOAST & SAVE -->
-<div class="save-ind" id="saveInd">☁️ Saved!</div>
+<div class="sind" id="sind">☁️ Saved!</div>
 <div class="toast" id="toast"></div>
 
-<!-- MAIN APP -->
+<!-- APP -->
 <div id="app">
-  <!-- HEADER -->
-  <div class="app-header">
-    <div class="header-bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-    <div class="header-top">
-      <div class="header-logo">
-        <span class="ico">📚</span>
-        <div>
-          <h1>Sonai Madarsa</h1>
-          <p>Management System</p>
-        </div>
+  <div class="hdr">
+    <div class="hbism">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+    <div class="htop">
+      <div class="hlogo">
+        <span class="hi">📚</span>
+        <div><h1>Sonai Madarsa</h1><p>Management System</p></div>
       </div>
-      <div class="header-right">
+      <div class="hright">
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <span class="badge badge-live">🔴 Live</span>
-          <span class="badge badge-mode" id="modeBadge">👁️ View</span>
+          <span class="badge blive">🔴 Live</span>
+          <span class="badge bmode" id="modeBadge">👁️ View</span>
         </div>
-        <button class="hamburger" onclick="openSidebar()"><span></span><span></span><span></span></button>
+        <button class="hmbg" onclick="openSB()"><span></span><span></span><span></span></button>
       </div>
     </div>
-    <button class="switch-btn" onclick="goMasjid()" style="margin-bottom:4px;">🕌 Masjid Pe Jao ›</button>
+    <a href="masjid.html" class="sw-btn">🕌 Masjid Pe Jao ›</a>
   </div>
 
-  <!-- PUBLIC STATS -->
-  <div class="pub-stats" id="pubStats"></div>
+  <div class="pstats" id="pubStats"></div>
 
-  <!-- NAV -->
-  <div class="nav-bottom">
-    <button class="nav-btn active" id="nav0" onclick="goPage(0)"><span class="nico">🏠</span>Home</button>
-    <button class="nav-btn" id="nav1" onclick="goPage(1)"><span class="nico">👤</span>Students</button>
-    <button class="nav-btn" id="nav2" onclick="goPage(2)"><span class="nico">✅</span>Hazri</button>
-    <button class="nav-btn" id="nav3" onclick="goPage(3)"><span class="nico">💰</span>Chanda</button>
-    <button class="nav-btn" id="nav4" onclick="goPage(4)"><span class="nico">💸</span>Kharcha</button>
-    <button class="nav-btn admin-only" id="nav5" onclick="goPage(5)"><span class="nico">👥</span>Committee</button>
-    <button class="nav-btn admin-only" id="nav6" onclick="goPage(6)"><span class="nico">👨‍🏫</span>Teachers</button>
-    <button class="nav-btn admin-only" id="nav7" onclick="goPage(7)"><span class="nico">📢</span>Notice</button>
+  <div class="nav" id="mainNav">
+    <button class="nb active" id="nav0" onclick="goPage(0)"><span class="ni">🏠</span>Home</button>
+    <button class="nb" id="nav1" onclick="goPage(1)"><span class="ni">👤</span>Students</button>
+    <button class="nb" id="nav2" onclick="goPage(2)"><span class="ni">✅</span>Hazri</button>
+    <button class="nb" id="nav3" onclick="goPage(3)"><span class="ni">💰</span>Chanda</button>
+    <button class="nb" id="nav4" onclick="goPage(4)"><span class="ni">💸</span>Kharcha</button>
+    <button class="nb ao" id="nav5" onclick="goPage(5)"><span class="ni">👥</span>Committee</button>
+    <button class="nb ao" id="nav6" onclick="goPage(6)"><span class="ni">👨‍🏫</span>Teachers</button>
+    <button class="nb ao" id="nav7" onclick="goPage(7)"><span class="ni">📢</span>Notice</button>
   </div>
 
   <!-- PAGE 0: HOME -->
   <div class="page active" id="page0">
     <div style="height:14px;"></div>
-    <div class="sec-title">📢 Announcements</div>
-    <div id="homeAnnList"></div>
-    <div class="sec-title">📊 Today's Summary</div>
+    <div class="stitle">📢 Notices</div>
+    <div id="homeAnn"></div>
+    <div class="stitle">📊 Today Summary</div>
     <div id="homeSummary"></div>
   </div>
 
   <!-- PAGE 1: STUDENTS -->
   <div class="page" id="page1">
     <div style="height:14px;"></div>
-    <div class="div-admin-only" id="addStuBtn" style="margin-bottom:12px;">
-      <button class="submit-btn" onclick="showModal('addStudentModal')">➕ Naya Student Add Karo</button>
+    <div class="dao" id="addStuBtn" style="margin-bottom:11px;">
+      <button class="sbtn" onclick="sm('mAddStu')">➕ Naya Student Add Karo</button>
     </div>
-    <div class="filter-tabs" id="stuFilterTabs">
-      <!-- Dynamic tabs yahan render honge -->
-    </div>
-    <div id="studentList"></div>
+    <div class="ftabs" id="stuTabs"></div>
+    <div id="stuList"></div>
   </div>
 
-  <!-- PAGE 2: ATTENDANCE -->
+  <!-- PAGE 2: HAZRI -->
   <div class="page" id="page2">
     <div style="height:14px;"></div>
-    <div class="sec-title">✅ Aaj Ki Hazri — <span id="attDate"></span></div>
-    <div class="div-admin-only" style="margin-bottom:12px;">
-      <button class="submit-btn green" onclick="saveAttendance()">💾 Hazri Save Karo</button>
+    <div class="stitle">✅ Aaj Ki Hazri — <span id="todayLbl"></span></div>
+    <div class="dao" style="margin-bottom:11px;">
+      <button class="sbtn green" onclick="saveAtt()">💾 Hazri Save Karo</button>
     </div>
     <div id="attList"></div>
   </div>
 
-  <!-- PAGE 3: CHANDA CAMPAIGNS -->
+  <!-- PAGE 3: CHANDA -->
   <div class="page" id="page3">
     <div style="height:14px;"></div>
-    <div class="div-admin-only" style="margin-bottom:12px;">
-      <button class="submit-btn" onclick="showModal('addCampModal')">➕ Naya Chanda Campaign</button>
+    <div class="dao" style="margin-bottom:11px;">
+      <button class="sbtn" onclick="sm('mAddCamp')">➕ Naya Chanda Campaign</button>
     </div>
-    <div id="chandaCampList"></div>
+    <div id="campList"></div>
   </div>
 
   <!-- PAGE 4: KHARCHA -->
   <div class="page" id="page4">
     <div style="height:14px;"></div>
-    <div id="kharchaSummary"></div>
-    <div class="div-admin-only">
-      <div class="sec-title">➕ Naya Kharcha</div>
-      <div class="form-box">
+    <div id="khSum"></div>
+    <div class="dao">
+      <div class="stitle">➕ Naya Kharcha</div>
+      <div class="fbox">
         <h4>💸 Kharcha Add Karo</h4>
-        <input class="fi" type="text" id="exDesc" placeholder="Kharcha kya tha? *"/>
-        <input class="fi" type="number" id="exAmount" placeholder="Amount ₹ *"/>
-        <input class="fi" type="text" id="exNote" placeholder="Note (optional)"/>
-        <button class="submit-btn red" onclick="addKharcha()">💸 Add Karo</button>
+        <input class="fi" type="text" id="exD" placeholder="Kharcha kya tha? *"/>
+        <input class="fi" type="number" id="exA" placeholder="Amount ₹ *"/>
+        <input class="fi" type="text" id="exN" placeholder="Note (optional)"/>
+        <button class="sbtn red" onclick="addKharcha()">💸 Add Karo</button>
       </div>
     </div>
-    <div class="sec-title">📋 Sab Kharche</div>
-    <div id="kharchaList"></div>
+    <div class="stitle">📋 Sab Kharche</div>
+    <div id="khList"></div>
   </div>
 
   <!-- PAGE 5: COMMITTEE -->
   <div class="page" id="page5">
     <div style="height:14px;"></div>
-    <div style="margin-bottom:12px;">
-      <button class="submit-btn gold" onclick="showModal('addCommModal')">➕ Committee Member Add</button>
+    <div style="margin-bottom:11px;">
+      <button class="sbtn gold" onclick="sm('mAddComm')">➕ Member Add Karo</button>
     </div>
-    <div class="sec-title">👥 Committee Members</div>
     <div id="commList"></div>
-    <div class="sec-title" style="margin-top:8px;">💰 Chanda Dene Wale Members</div>
-    <div id="chandaMemberList"></div>
   </div>
 
   <!-- PAGE 6: TEACHERS -->
   <div class="page" id="page6">
     <div style="height:14px;"></div>
-    <div style="margin-bottom:12px;">
-      <button class="submit-btn" onclick="showModal('addTeacherModal')">➕ Teacher Add Karo</button>
+    <div style="margin-bottom:11px;">
+      <button class="sbtn" onclick="sm('mAddTeacher')">➕ Teacher Add Karo</button>
     </div>
     <div id="teacherList"></div>
   </div>
@@ -544,696 +480,598 @@ input,select,textarea{font-family:'Poppins',sans-serif;outline:none;}
   <!-- PAGE 7: ANNOUNCEMENTS -->
   <div class="page" id="page7">
     <div style="height:14px;"></div>
-    <div style="margin-bottom:12px;">
-      <button class="submit-btn" onclick="showModal('addAnnModal')">📢 Naya Notice Post Karo</button>
+    <div style="margin-bottom:11px;">
+      <button class="sbtn" onclick="sm('mAddAnn')">📢 Naya Notice Post Karo</button>
     </div>
     <div id="annList"></div>
   </div>
-
-</div><!-- /app -->
+</div>
 
 <script>
 'use strict';
-// ═══ FIREBASE ═══
-var FB_CFG = {
+firebase.initializeApp({
   apiKey:"AIzaSyBELYt4Rfu5vmoJzR9hfxkbSEER4XErIoU",
   authDomain:"sonai-masjid.firebaseapp.com",
   projectId:"sonai-masjid",
   storageBucket:"sonai-masjid.firebasestorage.app",
   messagingSenderId:"680124332445",
   appId:"1:680124332445:web:e5ce79dc635f971f035774"
-};
-firebase.initializeApp(FB_CFG);
+});
 var db = firebase.firestore();
 
-// ═══ PINS ═══
 var ADMIN_PIN = 'AllahSabr';
-
-// ═══ STATE ═══
-var state = {
-  isAdmin: false,
-  isTeacher: false,
-  teacherName: '',
-  curPage: 0,
-  stuFilter: 0,
-  students: [],
-  teachers: [],
-  committee: [],
-  chandaMembers: [],
-  campaigns: [],
-  expenses: [],
-  announcements: [],
-  attendance: {},
-  todayStr: ''
+var S = {
+  isAdmin:false, isTeacher:false, teacherName:'',
+  curPage:0, stuFilter:0,
+  students:[], teachers:[], committee:[],
+  campaigns:[], expenses:[], announcements:[],
+  attendance:{}, todayStr:'', curCampId:null,
+  _classes:[]
 };
 
-// ═══ INIT ═══
+// Role config
+var ROLE_ORDER = ['Muhtamim','Nazim','Khazanchi','Katib','Nigran','Mushir','Aala_Chanda','Chanda_Member'];
+var ROLE_COLORS = {Muhtamim:'#8b0000',Nazim:'#0d2d5a',Khazanchi:'#1a6b3a',Katib:'#5a3a00',Nigran:'#1a4a6a',Mushir:'#6a1a8a',Aala_Chanda:'#8a6a00',Chanda_Member:'#1a4a8a'};
+var ROLE_LABELS = {Muhtamim:'🏛️ Muhtamim (مہتمم)',Nazim:'📋 Nazim (ناظم)',Khazanchi:'💰 Khazanchi (خزانچی)',Katib:'✍️ Katib (کاتب)',Nigran:'👁️ Nigran (نگران)',Mushir:'🎓 Mushir (مشیر)',Aala_Chanda:'⭐ Aala Chanda',Chanda_Member:'💚 Chanda Member'};
+var ZIMMEDARS = ['Muhtamim','Nazim','Khazanchi','Katib','Nigran','Mushir'];
+
 window.onload = function() {
   var d = new Date();
-  state.todayStr = d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
-  document.getElementById('attDate').textContent = state.todayStr;
-
-  setTimeout(function() {
-    document.getElementById('splash').style.opacity = '0';
-    setTimeout(function() {
-      document.getElementById('splash').style.display = 'none';
+  S.todayStr = d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+  document.getElementById('todayLbl').textContent = S.todayStr;
+  setTimeout(function(){
+    document.getElementById('splash').style.opacity='0';
+    setTimeout(function(){
+      document.getElementById('splash').style.display='none';
       document.getElementById('loginOverlay').classList.add('show');
-    }, 600);
-  }, 2000);
-
+    },600);
+  },2000);
   startListeners();
 };
 
-// ═══ FIREBASE LISTENERS ═══
 function startListeners() {
-  db.collection('mad_students').orderBy('createdAt','desc').onSnapshot(function(snap) {
-    state.students = [];
-    snap.forEach(function(doc){ var d=doc.data(); d.id=doc.id; state.students.push(d); });
+  db.collection('mad_students').orderBy('createdAt','desc').onSnapshot(function(snap){
+    S.students=[];
+    snap.forEach(function(doc){var d=doc.data();d.id=doc.id;S.students.push(d);});
     renderAll();
   });
-  db.collection('mad_teachers').onSnapshot(function(snap) {
-    state.teachers = [];
-    snap.forEach(function(doc){ var d=doc.data(); d.id=doc.id; state.teachers.push(d); });
+  db.collection('mad_teachers').onSnapshot(function(snap){
+    S.teachers=[];
+    snap.forEach(function(doc){var d=doc.data();d.id=doc.id;S.teachers.push(d);});
     renderTeachers();
   });
-  db.collection('mad_committee').onSnapshot(function(snap) {
-    state.committee = [];
-    snap.forEach(function(doc){ var d=doc.data(); d.id=doc.id; state.committee.push(d); });
-    renderCommittee();
+  db.collection('mad_committee').onSnapshot(function(snap){
+    S.committee=[];
+    snap.forEach(function(doc){var d=doc.data();d.id=doc.id;S.committee.push(d);});
+    renderComm();
   });
-  db.collection('mad_campaigns').orderBy('createdAt','desc').onSnapshot(function(snap) {
-    state.campaigns = [];
-    snap.forEach(function(doc){ var d=doc.data(); d.id=doc.id; state.campaigns.push(d); });
-    renderChandaCamps();
+  db.collection('mad_campaigns').orderBy('createdAt','desc').onSnapshot(function(snap){
+    S.campaigns=[];
+    snap.forEach(function(doc){var d=doc.data();d.id=doc.id;S.campaigns.push(d);});
+    renderCamps();
   });
-  db.collection('mad_expenses').orderBy('createdAt','desc').onSnapshot(function(snap) {
-    state.expenses = [];
-    snap.forEach(function(doc){ var d=doc.data(); d.id=doc.id; state.expenses.push(d); });
-    renderKharcha();
-    renderKharchaSummary();
+  db.collection('mad_expenses').orderBy('createdAt','desc').onSnapshot(function(snap){
+    S.expenses=[];
+    snap.forEach(function(doc){var d=doc.data();d.id=doc.id;S.expenses.push(d);});
+    renderKharcha();renderKhSum();
   });
-  db.collection('mad_announcements').orderBy('createdAt','desc').onSnapshot(function(snap) {
-    state.announcements = [];
-    snap.forEach(function(doc){ var d=doc.data(); d.id=doc.id; state.announcements.push(d); });
-    renderAnnouncements();
-    renderHomeAnn();
+  db.collection('mad_announcements').orderBy('createdAt','desc').onSnapshot(function(snap){
+    S.announcements=[];
+    snap.forEach(function(doc){var d=doc.data();d.id=doc.id;S.announcements.push(d);});
+    renderAnn();renderHomeAnn();
   });
-  db.collection('mad_attendance').doc('today').onSnapshot(function(doc) {
-    if(doc.exists) state.attendance = doc.data();
-    renderAttList();
+  db.collection('mad_attendance').doc('today').onSnapshot(function(doc){
+    if(doc.exists) S.attendance=doc.data(); else S.attendance={};
+    renderAtt();renderPubStats();
   });
 }
 
-// ═══ AUTH ═══
+// AUTH
 function doLogin() {
   var pin = document.getElementById('pinInput').value.trim();
-  if(pin === ADMIN_PIN) {
-    state.isAdmin = true;
-    loginSuccess('🔐 Admin');
-    return;
-  }
-  // Check teacher PINs
-  var found = false;
-  state.teachers.forEach(function(t) {
-    if(t.pin === pin) {
-      found = true;
-      state.isTeacher = true;
-      state.teacherName = t.name;
-      loginSuccess('👨‍🏫 '+t.name);
-    }
-  });
-  if(!found) {
-    document.getElementById('loginErr').style.display = 'block';
-  }
+  if(pin===ADMIN_PIN){loginOk('🔐 Admin',true,false,'');return;}
+  var found=false;
+  S.teachers.forEach(function(t){if(t.pin===pin){found=true;loginOk('👨‍🏫 '+t.name,false,true,t.name);}});
+  if(!found) document.getElementById('loginErr').style.display='block';
 }
-
-function loginSuccess(mode) {
+function loginOk(mode,isAdm,isTch,tname){
+  S.isAdmin=isAdm;S.isTeacher=isTch;S.teacherName=tname;
   document.getElementById('loginOverlay').classList.remove('show');
   document.getElementById('app').classList.add('show');
-  document.getElementById('modeBadge').textContent = mode;
-  document.getElementById('modeBadge').className = 'badge badge-admin';
-  document.querySelectorAll('.admin-only').forEach(function(el){ el.classList.add('show'); });
-  document.querySelectorAll('.div-admin-only').forEach(function(el){ el.classList.add('show'); });
+  document.getElementById('modeBadge').textContent=mode;
+  document.getElementById('modeBadge').className='badge badm';
+  document.querySelectorAll('.ao').forEach(function(el){el.classList.add('show');});
+  document.querySelectorAll('.dao').forEach(function(el){el.classList.add('show');});
   renderAll();
 }
-
-function doView() {
+function doView(){
   document.getElementById('loginOverlay').classList.remove('show');
   document.getElementById('app').classList.add('show');
   renderAll();
 }
-
-function doLogout() {
-  state.isAdmin = false; state.isTeacher = false;
+function doLogout(){
+  S.isAdmin=false;S.isTeacher=false;
   document.getElementById('app').classList.remove('show');
-  document.getElementById('pinInput').value = '';
-  document.getElementById('loginErr').style.display = 'none';
-  document.getElementById('modeBadge').textContent = '👁️ View';
-  document.getElementById('modeBadge').className = 'badge badge-mode';
-  document.querySelectorAll('.admin-only').forEach(function(el){ el.classList.remove('show'); });
-  document.querySelectorAll('.div-admin-only').forEach(function(el){ el.classList.remove('show'); });
+  document.getElementById('pinInput').value='';
+  document.getElementById('loginErr').style.display='none';
+  document.getElementById('modeBadge').textContent='👁️ View';
+  document.getElementById('modeBadge').className='badge bmode';
+  document.querySelectorAll('.ao').forEach(function(el){el.classList.remove('show');});
+  document.querySelectorAll('.dao').forEach(function(el){el.classList.remove('show');});
   document.getElementById('loginOverlay').classList.add('show');
-  closeSidebar();
+  closeSB();
 }
+function canEdit(){return S.isAdmin||S.isTeacher;}
 
-function canEdit() { return state.isAdmin || state.isTeacher; }
-
-// ═══ NAVIGATION ═══
-function goPage(n) {
-  state.curPage = n;
-  for(var i=0;i<8;i++) {
+// NAV
+function goPage(n){
+  S.curPage=n;
+  for(var i=0;i<8;i++){
     var p=document.getElementById('page'+i);
     var b=document.getElementById('nav'+i);
-    if(p) p.classList.toggle('active', i===n);
-    if(b) b.classList.toggle('active', i===n);
+    if(p)p.classList.toggle('active',i===n);
+    if(b)b.classList.toggle('active',i===n);
   }
 }
 
-function goMasjid() { window.location.href = 'masjid.html'; }
+// HELPERS
+function ini(n){return (n||'?').split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase();}
+function avc(n){var c=['#1a4a8a','#0d6e6e','#6a3a9a','#b85c00','#1a7a3a','#8a1a1a','#0a3a5a'];return c[(n||'?').charCodeAt(0)%c.length];}
+function mp(p){if(!p||p.length<6)return p||'—';return p.substring(0,6)+'****';}
+function sm(id){document.getElementById(id).classList.add('show');}
+function cm(id){document.getElementById(id).classList.remove('show');}
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2600);}
+function fs(){var el=document.getElementById('sind');el.classList.add('show');setTimeout(function(){el.classList.remove('show');},2000);}
+function openSB(){document.getElementById('sbPanel').classList.add('show');document.getElementById('sbOv').classList.add('show');document.getElementById('sbMode').textContent=S.isAdmin?'🔐 Admin Mode':S.isTeacher?'👨‍🏫 '+S.teacherName:'👁️ View Mode';}
+function closeSB(){document.getElementById('sbPanel').classList.remove('show');document.getElementById('sbOv').classList.remove('show');}
+function sbGo(n){closeSB();goPage(n);}
 
-// ═══ HELPERS ═══
-function initials(name) { return (name||'?').split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase(); }
-function avatarColor(name) {
-  var colors=['#1a4a8a','#0d6e6e','#6a3a9a','#b85c00','#1a7a3a','#8a1a1a','#0a3a5a'];
-  return colors[(name||'?').charCodeAt(0)%colors.length];
-}
-function maskPhone(p) { if(!p||p.length<6) return p||'—'; return p.substring(0,6)+'****'; }
-function fmtDate() { return state.todayStr; }
-function showModal(id) { document.getElementById(id).classList.add('show'); }
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-function showToast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2600); }
-function flashSave() { var el=document.getElementById('saveInd'); el.classList.add('show'); setTimeout(function(){el.classList.remove('show');},2000); }
-function openSidebar() {
-  document.getElementById('sidebar').classList.add('show');
-  document.getElementById('sidebarOverlay').classList.add('show');
-  document.getElementById('sbMode').textContent = state.isAdmin ? '🔐 Admin Mode' : state.isTeacher ? '👨‍🏫 '+state.teacherName : '👁️ View Mode';
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('show');
-  document.getElementById('sidebarOverlay').classList.remove('show');
-}
-function sbGo(n) { closeSidebar(); goPage(n); }
-
-// ═══ RENDER ALL ═══
-function renderAll() {
+// RENDER ALL
+function renderAll(){
   renderPubStats();
-  buildStuFilterTabs();
+  buildStuTabs();
   renderStudents();
-  renderAttList();
+  renderAtt();
   renderHomeSummary();
   renderHomeAnn();
 }
 
-// ═══ PUBLIC STATS ═══
-function renderPubStats() {
-  var total = state.students.length;
-  var today = Object.keys(state.attendance).length > 0;
-  var present = 0, absent = 0;
-  state.students.forEach(function(s) {
-    var a = state.attendance[s.id];
-    if(a === 'present') present++;
-    else if(a === 'absent') absent++;
-  });
-  document.getElementById('pubStats').innerHTML =
-    '<div class="pstat blue"><div class="v">'+total+'</div><div class="l">Total Students</div></div>'+
-    '<div class="pstat green"><div class="v">'+present+'</div><div class="l">✅ Aaj Present</div></div>'+
-    '<div class="pstat red"><div class="v">'+absent+'</div><div class="l">❌ Aaj Absent</div></div>';
+// PUBLIC STATS
+function renderPubStats(){
+  var tot=S.students.length;
+  var pre=S.students.filter(function(s){return S.attendance[s.id]==='present';}).length;
+  var abs=S.students.filter(function(s){return S.attendance[s.id]==='absent';}).length;
+  document.getElementById('pubStats').innerHTML=
+    '<div class="pst blue"><div class="v">'+tot+'</div><div class="l">Total Students</div></div>'+
+    '<div class="pst green"><div class="v">'+pre+'</div><div class="l">✅ Aaj Present</div></div>'+
+    '<div class="pst red"><div class="v">'+abs+'</div><div class="l">❌ Aaj Absent</div></div>';
 }
 
-// ═══ HOME SUMMARY ═══
-function renderHomeSummary() {
-  var total = state.students.length;
-  var feesPaid = state.students.filter(function(s){ return s.feesPaid; }).length;
-  var feesPending = total - feesPaid;
-  var totalFees = state.students.reduce(function(sum,s){ return sum+(s.fees||0); },0);
-  var collected = state.students.filter(function(s){ return s.feesPaid; }).reduce(function(sum,s){ return sum+(s.fees||0); },0);
-  document.getElementById('homeSummary').innerHTML =
-    '<div class="summary-box">'+
-      '<div class="summary-item"><div class="sv">'+total+'</div><div class="sl">Students</div></div>'+
-      '<div class="summary-item"><div class="sv gold">₹'+collected.toLocaleString()+'</div><div class="sl">Fees Collected</div></div>'+
-      '<div class="summary-item"><div class="sv red">'+feesPending+'</div><div class="sl">Fees Pending</div></div>'+
+// HOME SUMMARY
+function renderHomeSummary(){
+  var tot=S.students.length;
+  var paid=S.students.filter(function(s){return s.fees>0&&s.feesPaid;}).length;
+  var pend=S.students.filter(function(s){return s.fees>0&&!s.feesPaid;}).length;
+  var col=S.students.filter(function(s){return s.feesPaid;}).reduce(function(a,s){return a+(s.fees||0);},0);
+  document.getElementById('homeSummary').innerHTML=
+    '<div class="sumbox">'+
+      '<div class="sumi"><div class="sv">'+tot+'</div><div class="sl">Students</div></div>'+
+      '<div class="sumi"><div class="sv g">₹'+col.toLocaleString()+'</div><div class="sl">Fees Collected</div></div>'+
+      '<div class="sumi"><div class="sv r">'+pend+'</div><div class="sl">Fees Pending</div></div>'+
     '</div>';
 }
 
-// ═══ HOME ANNOUNCEMENTS ═══
-function renderHomeAnn() {
-  var el = document.getElementById('homeAnnList');
-  if(!el) return;
-  if(!state.announcements.length) { el.innerHTML='<div class="empty-state"><div class="eico">📢</div><p>Koi notice nahi hai.</p></div>'; return; }
-  el.innerHTML = state.announcements.slice(0,3).map(function(a){
-    return '<div class="ann-card"><div class="ann-title">'+a.title+'</div><div class="ann-body">'+a.body+'</div><div class="ann-date">📅 '+a.date+'</div></div>';
+// HOME ANNOUNCEMENTS
+function renderHomeAnn(){
+  var el=document.getElementById('homeAnn');if(!el)return;
+  if(!S.announcements.length){el.innerHTML='<div class="empty"><div class="ei">📢</div><p>Koi notice nahi.</p></div>';return;}
+  el.innerHTML=S.announcements.slice(0,3).map(function(a){
+    return '<div class="ancard"><div class="antitle">'+a.title+'</div><div class="anbody">'+a.body+'</div><div class="andate">📅 '+a.date+'</div></div>';
   }).join('');
 }
 
-// ═══ STUDENTS ═══
-function buildStuFilterTabs() {
-  // Get all unique classes from students
-  var classes = [];
-  state.students.forEach(function(s) {
-    if(s.sClass && classes.indexOf(s.sClass) < 0) classes.push(s.sClass);
-  });
-  // Update datalist suggestions
-  var dl = document.getElementById('classSuggestions');
-  if(dl) dl.innerHTML = classes.map(function(c){ return '<option value="'+c+'">'; }).join('');
-
-  var el = document.getElementById('stuFilterTabs');
-  if(!el) return;
-  var filters = ['Sab','✅ Paid','⏳ Pending'].concat(classes);
-  el.innerHTML = filters.map(function(f,i){
-    return '<button class="ftab'+(state.stuFilter===i?' active':'')+'" onclick="setStuFilter('+i+')">'+f+'</button>';
+// DYNAMIC STUDENT FILTER TABS
+function buildStuTabs(){
+  var classes=[];
+  S.students.forEach(function(s){if(s.sClass&&classes.indexOf(s.sClass)<0)classes.push(s.sClass);});
+  S._classes=classes;
+  // Update datalist
+  var dl=document.getElementById('clsDl');
+  if(dl)dl.innerHTML=classes.map(function(c){return '<option value="'+c+'">';}).join('');
+  var el=document.getElementById('stuTabs');if(!el)return;
+  var tabs=['Sab','✅ Fees Paid','⏳ Fees Pending'].concat(classes);
+  el.innerHTML=tabs.map(function(t,i){
+    return '<button class="ftab'+(S.stuFilter===i?' active':'')+'" onclick="setStuFilter('+i+')">'+t+'</button>';
   }).join('');
-  state._stuFilterClasses = classes;
 }
 
-function setStuFilter(f) {
-  state.stuFilter = f;
-  buildStuFilterTabs();
-  renderStudents();
-}
+function setStuFilter(f){S.stuFilter=f;buildStuTabs();renderStudents();}
 
-function renderStudents() {
-  var el = document.getElementById('studentList');
-  if(!el) return;
-  var classes = state._stuFilterClasses || [];
-  var filtered = state.students.filter(function(s) {
-    if(state.stuFilter===1) return s.fees > 0 && s.feesPaid;
-    if(state.stuFilter===2) return s.fees > 0 && !s.feesPaid;
-    if(state.stuFilter>=3) return s.sClass === classes[state.stuFilter-3];
+// RENDER STUDENTS
+function renderStudents(){
+  var el=document.getElementById('stuList');if(!el)return;
+  var filtered=S.students.filter(function(s){
+    if(S.stuFilter===1)return s.fees>0&&s.feesPaid;
+    if(S.stuFilter===2)return s.fees>0&&!s.feesPaid;
+    if(S.stuFilter>=3)return s.sClass===S._classes[S.stuFilter-3];
     return true;
   });
-  // Paid on top
-  filtered.sort(function(a,b){ if(a.feesPaid&&!b.feesPaid)return -1; if(!a.feesPaid&&b.feesPaid)return 1; return 0; });
-  if(!filtered.length){ el.innerHTML='<div class="empty-state"><div class="eico">👤</div><p>Koi student nahi mila.</p></div>'; return; }
+  filtered.sort(function(a,b){
+    if(a.fees>0&&a.feesPaid&&!(b.fees>0&&b.feesPaid))return -1;
+    if(!(a.fees>0&&a.feesPaid)&&b.fees>0&&b.feesPaid)return 1;
+    return 0;
+  });
+  if(!filtered.length){el.innerHTML='<div class="empty"><div class="ei">👤</div><p>Koi student nahi mila.</p></div>';return;}
 
-  // Admin sees full details, public sees limited
-  if(canEdit() || state.isAdmin) {
-    el.innerHTML = filtered.map(function(s,i){
-      return '<div class="student-card '+(s.feesPaid?'paid-card':'pending-card')+'">'+
-        '<div class="stu-avatar" style="background:'+avatarColor(s.name)+';">'+initials(s.name)+'</div>'+
-        '<div class="stu-info">'+
-          '<div class="stu-name">'+s.name+'</div>'+
-          '<div class="stu-class">'+s.sClass+' · Umar: '+(s.age||'—')+'</div>'+
-          '<div class="stu-fees">Wali: '+s.guardian+' · '+maskPhone(s.phone)+'</div>'+
-          '<div class="stu-fees" style="color:#1a4a8a;font-weight:700;">Fees: ₹'+(s.fees||0)+'/month</div>'+
+  if(canEdit()){
+    el.innerHTML=filtered.map(function(s){
+      var hasFees=s.fees>0;
+      var fBadge=hasFees?('<button class="fbadge '+(s.feesPaid?'paid':'pend')+'" onclick="toggleFees(\''+s.id+'\')">'+(s.feesPaid?'✅ Paid':'⏳ Pending')+'</button>'):'<span style="font-size:10px;color:#7a8099;padding:4px;">Muft</span>';
+      return '<div class="scard '+(hasFees?(s.feesPaid?'paid-c':'pend-c'):'')+'">'+
+        '<div class="sav" style="background:'+avc(s.name)+';">'+ini(s.name)+'</div>'+
+        '<div class="si2">'+
+          '<div class="sname">'+s.name+'</div>'+
+          '<div class="sclass">'+s.sClass+(s.age?' · Umar: '+s.age:'')+'</div>'+
+          '<div class="sfees">Wali: '+s.guardian+' · '+mp(s.phone)+'</div>'+
+          (hasFees?'<div class="sfees" style="color:#1a4a8a;font-weight:700;">₹'+s.fees+'/month</div>':'')+
         '</div>'+
-        '<div class="stu-actions">'+
-          '<button class="fees-badge '+(s.feesPaid?'paid':'pending')+'" onclick="toggleFees(\''+s.id+'\')">'+(s.feesPaid?'✅ Paid':'⏳ Pending')+'</button>'+
-          (state.isAdmin?'<button class="edit-btn-sm" onclick="openStuEdit(\''+s.id+'\')">✏️</button>'+
-          '<button class="edit-btn-sm" style="background:#fdecea;color:#c0392b;" onclick="deleteStudent(\''+s.id+'\')">🗑️</button>':'')+''+
+        '<div class="sacts">'+
+          fBadge+
+          (S.isAdmin?'<button class="esm" onclick="openEditStu(\''+s.id+'\')">✏️</button><button class="esm del" onclick="delStu(\''+s.id+'\')">🗑️</button>':'')+
         '</div>'+
       '</div>';
     }).join('');
   } else {
-    // Public view - sirf class aur fees status, naam nahi
-    el.innerHTML = '<div style="background:#f0f5ff;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #c0d0f0;font-size:12px;color:#0d2d5a;">🔒 Student details sirf admin/teacher dekh sakte hain.</div>'+
+    // PUBLIC: naam nahi, sirf marhala + fees status (agar fees>0)
+    el.innerHTML='<div style="background:#f0f5ff;border-radius:10px;padding:12px 14px;margin-bottom:10px;border:1px solid #c0d0f0;font-size:12px;color:#0d2d5a;">🔒 Student ki personal details sirf admin/teacher dekh sakte hain.</div>'+
       filtered.map(function(s){
-        return '<div class="student-card">'+
-          '<div class="stu-avatar" style="background:#c8cde0;color:#7a8099;">👤</div>'+
-          '<div class="stu-info">'+
-            '<div class="stu-name" style="color:#7a8099;">Student — '+s.sClass+'</div>'+
-            '<div class="stu-class">Class: '+s.sClass+'</div>'+
+        var hasFees=s.fees>0;
+        return '<div class="scard">'+
+          '<div class="sav" style="background:#c8cde0;color:#7a8099;">👤</div>'+
+          '<div class="si2">'+
+            '<div class="sname" style="color:#7a8099;">Student</div>'+
+            '<div class="sclass">'+s.sClass+'</div>'+
           '</div>'+
-          '<div class="stu-actions">'+
-            (s.fees>0?'<span class="fees-badge '+(s.feesPaid?'paid':'pending')+'" style="cursor:default;">'+(s.feesPaid?'✅ Paid':'⏳ Pending')+'</span>':'')+
+          '<div class="sacts">'+
+            (hasFees?'<span class="fbadge '+(s.feesPaid?'paid':'pend')+'" style="cursor:default;">'+(s.feesPaid?'✅ Paid':'⏳ Pending')+'</span>':'')+
           '</div>'+
         '</div>';
       }).join('');
   }
 }
 
-function toggleFees(id) {
-  if(!canEdit()) { showToast('❌ Permission nahi hai!'); return; }
-  var s = state.students.find(function(x){ return x.id===id; });
-  if(!s) return;
-  db.collection('mad_students').doc(id).update({ feesPaid: !s.feesPaid }).then(function(){
-    flashSave(); showToast(s.feesPaid?'↩️ Pending ho gaya!':'✅ Fees Paid!');
+function toggleFees(id){
+  if(!canEdit()){toast('❌ Permission nahi!');return;}
+  var s=S.students.find(function(x){return x.id===id;});
+  if(!s)return;
+  db.collection('mad_students').doc(id).update({feesPaid:!s.feesPaid}).then(function(){
+    fs();toast(s.feesPaid?'↩️ Pending ho gaya!':'✅ Fees Paid!');
   });
 }
 
-function addStudent() {
-  var name = document.getElementById('sName').value.trim();
-  var sClass = document.getElementById('sClass').value;
-  var guardian = document.getElementById('sGuardian').value.trim();
-  if(!name||!sClass||!guardian){ showToast('❌ Naam, Class aur Wali zaroori hain!'); return; }
+function addStudent(){
+  var name=document.getElementById('sName').value.trim();
+  var cls=document.getElementById('sClass').value.trim();
+  var grd=document.getElementById('sGuardian').value.trim();
+  if(!name||!cls||!grd){toast('❌ Naam, Marhala aur Wali zaroori hain!');return;}
   db.collection('mad_students').add({
-    name:name, age:document.getElementById('sAge').value.trim(),
-    sClass:sClass, guardian:guardian,
+    name:name,age:document.getElementById('sAge').value.trim(),
+    sClass:cls,guardian:grd,
     phone:document.getElementById('sPhone').value.trim(),
     fees:parseInt(document.getElementById('sFees').value)||0,
-    feesPaid:false,
-    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    feesPaid:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()
   }).then(function(){
-    closeModal('addStudentModal');
-    ['sName','sAge','sGuardian','sPhone','sFees'].forEach(function(id){document.getElementById(id).value='';});
-    document.getElementById('sClass').value='';
-    showToast('✅ Student add ho gaya!');
+    cm('mAddStu');
+    ['sName','sAge','sClass','sGuardian','sPhone','sFees'].forEach(function(id){document.getElementById(id).value='';});
+    toast('✅ Student add ho gaya!');
   });
 }
 
-function openStuEdit(id) {
-  var s = state.students.find(function(x){ return x.id===id; });
-  if(!s) return;
-  document.getElementById('eSName').value = s.name;
-  document.getElementById('eSAge').value = s.age||'';
-  document.getElementById('eSClass').value = s.sClass||'';
-  document.getElementById('eSGuardian').value = s.guardian||'';
-  document.getElementById('eSPhone').value = s.phone||'';
-  document.getElementById('eSFees').value = s.fees||0;
-  document.getElementById('eSIdx').value = id;
-  showModal('editStudentModal');
+function openEditStu(id){
+  var s=S.students.find(function(x){return x.id===id;});if(!s)return;
+  document.getElementById('eSName').value=s.name;
+  document.getElementById('eSAge').value=s.age||'';
+  document.getElementById('eSClass').value=s.sClass||'';
+  document.getElementById('eSGuardian').value=s.guardian||'';
+  document.getElementById('eSPhone').value=s.phone||'';
+  document.getElementById('eSFees').value=s.fees||0;
+  document.getElementById('eSId').value=id;
+  sm('mEditStu');
 }
 
-function saveStudentEdit() {
-  var id = document.getElementById('eSIdx').value;
+function saveEditStu(){
+  var id=document.getElementById('eSId').value;
   db.collection('mad_students').doc(id).update({
-    name: document.getElementById('eSName').value.trim(),
-    age: document.getElementById('eSAge').value.trim(),
-    sClass: document.getElementById('eSClass').value,
-    guardian: document.getElementById('eSGuardian').value.trim(),
-    phone: document.getElementById('eSPhone').value.trim(),
-    fees: parseInt(document.getElementById('eSFees').value)||0
-  }).then(function(){ closeModal('editStudentModal'); flashSave(); showToast('✅ Update ho gaya!'); });
+    name:document.getElementById('eSName').value.trim(),
+    age:document.getElementById('eSAge').value.trim(),
+    sClass:document.getElementById('eSClass').value.trim(),
+    guardian:document.getElementById('eSGuardian').value.trim(),
+    phone:document.getElementById('eSPhone').value.trim(),
+    fees:parseInt(document.getElementById('eSFees').value)||0
+  }).then(function(){cm('mEditStu');fs();toast('✅ Update ho gaya!');});
 }
 
-function deleteStudent(id) {
-  var s = state.students.find(function(x){ return x.id===id; });
-  if(!confirm((s?s.name:'Student')+' ko delete karna chahte hain?')) return;
-  db.collection('mad_students').doc(id).delete().then(function(){ showToast('🗑️ Delete ho gaya!'); });
+function delStu(id){
+  var s=S.students.find(function(x){return x.id===id;});
+  if(!confirm((s?s.name:'Student')+' ko delete karein?'))return;
+  db.collection('mad_students').doc(id).delete().then(function(){toast('🗑️ Delete ho gaya!');});
 }
 
-// ═══ ATTENDANCE ═══
-function renderAttList() {
-  var el = document.getElementById('attList');
-  if(!el) return;
-  if(!state.students.length){ el.innerHTML='<div class="empty-state"><div class="eico">👤</div><p>Koi student nahi hai.</p></div>'; return; }
+// ATTENDANCE
+function renderAtt(){
+  var el=document.getElementById('attList');if(!el)return;
+  if(!S.students.length){el.innerHTML='<div class="empty"><div class="ei">👤</div><p>Koi student nahi.</p></div>';return;}
 
-  if(!canEdit()) {
-    var presentList = state.students.filter(function(s){ return state.attendance[s.id]==='present'; });
-    var absentList = state.students.filter(function(s){ return state.attendance[s.id]==='absent'; });
-    if(!presentList.length && !absentList.length) {
-      el.innerHTML='<div class="empty-state"><div class="eico">📋</div><p>Aaj ki hazri abhi tak nahi li gayi.</p></div>';
-      return;
+  // Public: sirf count dikho, details nahi
+  if(!canEdit()){
+    var pre=S.students.filter(function(s){return S.attendance[s.id]==='present';}).length;
+    var abs=S.students.filter(function(s){return S.attendance[s.id]==='absent';}).length;
+    var unmarked=S.students.length-pre-abs;
+    if(pre===0&&abs===0&&unmarked===S.students.length){
+      el.innerHTML='<div class="empty"><div class="ei">📋</div><p>Aaj ki hazri abhi nahi li gayi.</p></div>';return;
     }
     var h='';
-    if(presentList.length) h+='<div style="background:#e8f5ee;border-radius:10px;padding:12px 16px;margin-bottom:8px;font-size:13px;font-weight:700;color:#1a7a3a;">✅ Present: '+presentList.length+' Students</div>';
-    if(absentList.length) h+='<div style="background:#fdf0ee;border-radius:10px;padding:12px 16px;font-size:13px;font-weight:700;color:#c0392b;">❌ Absent: '+absentList.length+' Students</div>';
-    el.innerHTML = h;
-    return;
+    if(pre>0)h+='<div style="background:#e8f5ee;border-radius:10px;padding:13px 16px;margin-bottom:8px;font-size:13px;font-weight:700;color:#1a7a3a;">✅ Present: '+pre+' Students</div>';
+    if(abs>0)h+='<div style="background:#fdf0ee;border-radius:10px;padding:13px 16px;font-size:13px;font-weight:700;color:#c0392b;">❌ Absent: '+abs+' Students</div>';
+    el.innerHTML=h;return;
   }
 
-  el.innerHTML = state.students.map(function(s){
-    var att = state.attendance[s.id];
-    return '<div class="att-card">'+
-      '<div><div class="att-name">'+s.name+'</div><div class="att-class">'+s.sClass+'</div></div>'+
-      '<div class="att-btns">'+
-        '<button class="att-btn '+(att==='present'?'sel-present':'present')+'" onclick="markAtt(\''+s.id+'\',\'present\')">✅ Present</button>'+
-        '<button class="att-btn '+(att==='absent'?'sel-absent':'absent')+'" onclick="markAtt(\''+s.id+'\',\'absent\')">❌ Absent</button>'+
-      '</div></div>';
+  // Admin/Teacher: full list
+  el.innerHTML=S.students.map(function(s){
+    var att=S.attendance[s.id];
+    return '<div class="acard">'+
+      '<div><div class="aname">'+s.name+'</div><div class="acls">'+s.sClass+'</div></div>'+
+      '<div class="abtns">'+
+        '<button class="abtn '+(att==='present'?'sp':'p')+'" onclick="markAtt(\''+s.id+'\',\'present\')">✅ Present</button>'+
+        '<button class="abtn '+(att==='absent'?'sa':'a')+'" onclick="markAtt(\''+s.id+'\',\'absent\')">❌ Absent</button>'+
+      '</div>'+
+    '</div>';
   }).join('');
 }
 
-function markAtt(id, status) {
-  if(!canEdit()){ showToast('❌ Permission nahi hai!'); return; }
-  state.attendance[id] = status;
-  renderAttList();
-  renderPubStats();
+function markAtt(id,status){
+  if(!canEdit()){toast('❌ Permission nahi!');return;}
+  S.attendance[id]=status;
+  renderAtt();renderPubStats();
 }
 
-function saveAttendance() {
-  if(!canEdit()) return;
-  db.collection('mad_attendance').doc('today').set(state.attendance).then(function(){
-    flashSave(); showToast('✅ Hazri save ho gayi!');
+function saveAtt(){
+  if(!canEdit())return;
+  db.collection('mad_attendance').doc('today').set(S.attendance).then(function(){
+    fs();toast('✅ Hazri save ho gayi!');
   });
 }
 
-// ═══ CHANDA CAMPAIGNS ═══
-function renderChandaCamps() {
-  var el = document.getElementById('chandaCampList');
-  if(!el) return;
-  if(!state.campaigns.length){ el.innerHTML='<div class="empty-state"><div class="eico">💰</div><p>Koi campaign nahi hai.</p></div>'; return; }
-  el.innerHTML = state.campaigns.map(function(c){
-    var members = c.members||[];
-    var collected = members.filter(function(m){return m.paid;}).reduce(function(s,m){return s+m.amount;},0);
-    var tgt = c.target||1;
-    var pct = Math.min(100,Math.round(collected/tgt*100));
-    var paid = members.filter(function(m){return m.paid;}).length;
-    var pend = members.length - paid;
-    return '<div class="camp-card">'+
-      '<div class="camp-header">'+
-        '<div class="camp-top">'+
-          '<div class="camp-ico-box">💰</div>'+
-          '<div style="flex:1;">'+
-            '<div class="camp-name">'+c.name+'</div>'+
-            '<div class="camp-desc">'+(c.desc||'')+'</div>'+
-          '</div>'+
-          '<span class="camp-status-badge active">🟢 Active</span>'+
+// CAMPAIGNS
+function renderCamps(){
+  var el=document.getElementById('campList');if(!el)return;
+  if(!S.campaigns.length){el.innerHTML='<div class="empty"><div class="ei">💰</div><p>Koi campaign nahi.</p></div>';return;}
+  el.innerHTML=S.campaigns.map(function(c){
+    var mems=c.members||[];
+    var col=mems.filter(function(m){return m.paid;}).reduce(function(a,m){return a+m.amount;},0);
+    var tgt=c.target||1;
+    var pct=Math.min(100,Math.round(col/tgt*100));
+    var paid=mems.filter(function(m){return m.paid;}).length;
+    var pend=mems.length-paid;
+    return '<div class="cpcard">'+
+      '<div class="cphdr">'+
+        '<div class="cptop">'+
+          '<div class="cpico">💰</div>'+
+          '<div style="flex:1;"><div class="cpname">'+c.name+'</div><div class="cpdesc">'+(c.desc||'')+'</div></div>'+
+          '<span class="cpbadge">🟢 Active</span>'+
         '</div>'+
-        '<div class="prog-bar"><div class="prog-fill" style="width:'+pct+'%"></div></div>'+
-        '<div class="prog-label"><span>₹'+collected.toLocaleString()+' / ₹'+tgt.toLocaleString()+'</span><span>'+pct+'%</span></div>'+
-        '<div class="camp-nums">'+
-          '<div class="camp-num"><div class="v">'+members.length+'</div><div class="l">Members</div></div>'+
-          '<div class="camp-num"><div class="v">'+paid+'</div><div class="l">✅ Paid</div></div>'+
-          '<div class="camp-num"><div class="v">'+pend+'</div><div class="l">⏳ Pending</div></div>'+
-          '<div class="camp-num"><div class="v">₹'+(tgt-collected).toLocaleString()+'</div><div class="l">Baki</div></div>'+
+        '<div class="pbar"><div class="pfill" style="width:'+pct+'%"></div></div>'+
+        '<div class="plbl"><span>₹'+col.toLocaleString()+' / ₹'+tgt.toLocaleString()+'</span><span>'+pct+'%</span></div>'+
+        '<div class="cpnums">'+
+          '<div class="cpnum"><div class="v">'+mems.length+'</div><div class="l">Members</div></div>'+
+          '<div class="cpnum"><div class="v">'+paid+'</div><div class="l">✅ Paid</div></div>'+
+          '<div class="cpnum"><div class="v">'+pend+'</div><div class="l">⏳ Pending</div></div>'+
+          '<div class="cpnum"><div class="v">₹'+(tgt-col).toLocaleString()+'</div><div class="l">Baki</div></div>'+
         '</div>'+
       '</div>'+
-      (state.isAdmin?'<div class="camp-actions">'+
-        '<button class="camp-btn view" onclick="showChandaMembers(\''+c.id+'\')">👥 Members</button>'+
-        '<button class="camp-btn del" onclick="deleteCampaign(\''+c.id+'\')">🗑️</button>'+
+      (S.isAdmin?'<div class="cpacts">'+
+        '<button class="cpbtn view" onclick="openAddCMember(\''+c.id+'\')">👥 Member Add</button>'+
+        '<button class="cpbtn del" onclick="delCamp(\''+c.id+'\')">🗑️ Delete</button>'+
       '</div>':'')+
     '</div>';
   }).join('');
 }
 
-function createCampaign() {
-  var name = document.getElementById('ncName').value.trim();
-  if(!name){ showToast('❌ Naam daalo!'); return; }
+function addCampaign(){
+  var n=document.getElementById('ncName').value.trim();
+  if(!n){toast('❌ Naam daalo!');return;}
   db.collection('mad_campaigns').add({
-    name:name, desc:document.getElementById('ncDesc').value.trim(),
+    name:n,desc:document.getElementById('ncDesc').value.trim(),
     target:parseInt(document.getElementById('ncTarget').value)||0,
-    members:[], createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    members:[],createdAt:firebase.firestore.FieldValue.serverTimestamp()
   }).then(function(){
-    closeModal('addCampModal');
+    cm('mAddCamp');
     ['ncName','ncDesc','ncTarget'].forEach(function(id){document.getElementById(id).value='';});
-    showToast('✅ Campaign ban gaya!');
+    toast('✅ Campaign ban gaya!');
   });
 }
 
-function madDeleteCampaign(id) {
-  if(!confirm('Campaign delete karna chahte hain? Sab data chala jayega!')) return;
-  db.collection('mad_campaigns').doc(id).delete().then(function(){ showToast('🗑️ Campaign delete ho gaya!'); });
-}
-function deleteCampaign(id) { madDeleteCampaign(id); }
-
-function showChandaMembers(campId) {
-  state.curCampId = campId;
-  showModal('addChandaMemberModal');
+function delCamp(id){
+  if(!confirm('Campaign aur sara data delete ho jayega! Pakka?'))return;
+  db.collection('mad_campaigns').doc(id).delete().then(function(){toast('🗑️ Campaign delete ho gaya!');});
 }
 
-function addChandaMember() {
-  var name = document.getElementById('cmName').value.trim();
-  var amount = parseInt(document.getElementById('cmAmount').value)||0;
-  if(!name||!amount){ showToast('❌ Naam aur amount zaroori hain!'); return; }
-  var campId = state.curCampId;
-  if(!campId){ showToast('❌ Campaign select karo!'); return; }
-  var c = state.campaigns.find(function(x){ return x.id===campId; });
-  if(!c) return;
-  var members = JSON.parse(JSON.stringify(c.members||[]));
-  members.push({ name:name, phone:document.getElementById('cmPhone').value.trim(), amount:amount, paid:false });
-  db.collection('mad_campaigns').doc(campId).update({ members:members }).then(function(){
-    closeModal('addChandaMemberModal');
-    ['cmName','cmPhone','cmAmount'].forEach(function(id){document.getElementById(id).value='';});
-    showToast('✅ Member add ho gaya!');
+function openAddCMember(campId){S.curCampId=campId;sm('mAddCMember');}
+
+function addCMember(){
+  var name=document.getElementById('cmName').value.trim();
+  var amt=parseInt(document.getElementById('cmAmt').value)||0;
+  if(!name||!amt){toast('❌ Naam aur amount zaroori!');return;}
+  var c=S.campaigns.find(function(x){return x.id===S.curCampId;});if(!c)return;
+  var mems=JSON.parse(JSON.stringify(c.members||[]));
+  mems.push({name:name,phone:document.getElementById('cmPhone').value.trim(),amount:amt,paid:false});
+  db.collection('mad_campaigns').doc(S.curCampId).update({members:mems}).then(function(){
+    cm('mAddCMember');
+    ['cmName','cmPhone','cmAmt'].forEach(function(id){document.getElementById(id).value='';});
+    toast('✅ Member add ho gaya!');
   });
 }
 
-// ═══ KHARCHA ═══
-function renderKharchaSummary() {
-  var el = document.getElementById('kharchaSummary');
-  if(!el) return;
-  var totalEx = state.expenses.reduce(function(s,e){ return s+e.amount; },0);
-  var totalFees = state.students.filter(function(s){ return s.feesPaid; }).reduce(function(sum,s){ return sum+(s.fees||0); },0);
-  el.innerHTML = '<div class="summary-box">'+
-    '<div class="summary-item"><div class="sv gold">₹'+totalFees.toLocaleString()+'</div><div class="sl">Fees Collected</div></div>'+
-    '<div class="summary-item"><div class="sv red">₹'+totalEx.toLocaleString()+'</div><div class="sl">Total Kharcha</div></div>'+
-    '<div class="summary-item"><div class="sv">₹'+(totalFees-totalEx).toLocaleString()+'</div><div class="sl">Balance</div></div>'+
+// KHARCHA
+function renderKhSum(){
+  var el=document.getElementById('khSum');if(!el)return;
+  var totEx=S.expenses.reduce(function(a,e){return a+e.amount;},0);
+  var totFees=S.students.filter(function(s){return s.feesPaid;}).reduce(function(a,s){return a+(s.fees||0);},0);
+  el.innerHTML='<div class="sumbox">'+
+    '<div class="sumi"><div class="sv g">₹'+totFees.toLocaleString()+'</div><div class="sl">Fees Collected</div></div>'+
+    '<div class="sumi"><div class="sv r">₹'+totEx.toLocaleString()+'</div><div class="sl">Total Kharcha</div></div>'+
+    '<div class="sumi"><div class="sv">₹'+(totFees-totEx).toLocaleString()+'</div><div class="sl">Balance</div></div>'+
   '</div>';
 }
 
-function addKharcha() {
-  var desc = document.getElementById('exDesc').value.trim();
-  var amount = parseInt(document.getElementById('exAmount').value)||0;
-  if(!desc||!amount){ showToast('❌ Description aur amount daalo!'); return; }
+function addKharcha(){
+  var d=document.getElementById('exD').value.trim();
+  var a=parseInt(document.getElementById('exA').value)||0;
+  if(!d||!a){toast('❌ Description aur amount daalo!');return;}
   db.collection('mad_expenses').add({
-    desc:desc, amount:amount, note:document.getElementById('exNote').value.trim(),
-    date:fmtDate(), createdAt:firebase.firestore.FieldValue.serverTimestamp()
-  }).then(function(){
-    ['exDesc','exAmount','exNote'].forEach(function(id){document.getElementById(id).value='';});
-    showToast('💸 Kharcha add ho gaya!');
-  });
+    desc:d,amount:a,note:document.getElementById('exN').value.trim(),
+    date:S.todayStr,createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function(){['exD','exA','exN'].forEach(function(id){document.getElementById(id).value='';});toast('💸 Kharcha add ho gaya!');});
 }
 
-function renderKharcha() {
-  var el = document.getElementById('kharchaList');
-  if(!el) return;
-  if(!state.expenses.length){ el.innerHTML='<div class="empty-state"><div class="eico">💸</div><p>Koi kharcha nahi.</p></div>'; return; }
-  el.innerHTML = state.expenses.map(function(ex){
-    return '<div class="expense-card">'+
+function renderKharcha(){
+  var el=document.getElementById('khList');if(!el)return;
+  if(!S.expenses.length){el.innerHTML='<div class="empty"><div class="ei">💸</div><p>Koi kharcha nahi.</p></div>';return;}
+  el.innerHTML=S.expenses.map(function(ex){
+    return '<div class="excard">'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;">'+
         '<div>'+
-          '<div class="expense-title">'+ex.desc+'</div>'+
-          '<div class="expense-amount">−₹'+ex.amount.toLocaleString()+'</div>'+
-          '<div class="expense-date">📅 '+ex.date+(ex.note?' · '+ex.note:'')+'</div>'+
+          '<div class="extitle">'+ex.desc+'</div>'+
+          '<div class="examount">−₹'+ex.amount.toLocaleString()+'</div>'+
+          '<div class="exdate">📅 '+ex.date+(ex.note?' · '+ex.note:'')+'</div>'+
         '</div>'+
-        (state.isAdmin?'<button onclick="deleteKharcha(\''+ex.id+'\')" style="background:none;border:none;color:#c0392b;font-size:18px;cursor:pointer;">🗑️</button>':'')+
+        (S.isAdmin?'<button onclick="delKh(\''+ex.id+'\')" style="background:none;border:none;color:#c0392b;font-size:18px;cursor:pointer;">🗑️</button>':'')+
       '</div>'+
     '</div>';
   }).join('');
 }
 
-function deleteKharcha(id) {
-  if(!confirm('Delete karein?')) return;
-  db.collection('mad_expenses').doc(id).delete().then(function(){ showToast('🗑️ Delete ho gaya!'); });
-}
+function delKh(id){if(!confirm('Delete karein?'))return;db.collection('mad_expenses').doc(id).delete().then(function(){toast('🗑️ Delete!');});}
 
-// ═══ COMMITTEE ═══
-function addCommMember() {
-  var name = document.getElementById('cName').value.trim();
-  if(!name){ showToast('❌ Naam daalo!'); return; }
+// COMMITTEE — with color system, sorted by role
+function addCommMember(){
+  var n=document.getElementById('cName').value.trim();
+  if(!n){toast('❌ Naam daalo!');return;}
   db.collection('mad_committee').add({
-    name:name, phone:document.getElementById('cPhone').value.trim(),
+    name:n,phone:document.getElementById('cPhone').value.trim(),
     role:document.getElementById('cRole').value,
+    chanda:parseInt(document.getElementById('cChanda').value)||0,
     note:document.getElementById('cNote').value.trim(),
     createdAt:firebase.firestore.FieldValue.serverTimestamp()
   }).then(function(){
-    closeModal('addCommModal');
-    ['cName','cPhone','cNote'].forEach(function(id){document.getElementById(id).value='';});
-    showToast('✅ Committee member add ho gaya!');
+    cm('mAddComm');
+    ['cName','cPhone','cChanda','cNote'].forEach(function(id){document.getElementById(id).value='';});
+    toast('✅ Member add ho gaya!');
   });
 }
 
-function renderCommittee() {
-  var el = document.getElementById('commList');
-  if(!el) return;
-  if(!state.committee.length){ el.innerHTML='<div class="empty-state" style="padding:20px;"><p>Koi committee member nahi.</p></div>'; return; }
-  var roleOrder = ['Muhtamim','Nazim','Khazanchi','Katib','Nigran','Mushir','Aala_Chanda','Chanda_Member'];
-  var roleColors = {Muhtamim:'#8b0000',Nazim:'#0d2d5a',Khazanchi:'#1a6b3a',Katib:'#5a3a00',Nigran:'#1a4a6a',Mushir:'#4a1a6a',Aala_Chanda:'#8a6a00',Chanda_Member:'#1a4a8a'};
-  var roleLabels = {Muhtamim:'🏛️ Muhtamim (مہتمم)',Nazim:'📋 Nazim (ناظم)',Khazanchi:'💰 Khazanchi (خزانچی)',Katib:'✍️ Katib (کاتب)',Nigran:'👁️ Nigran (نگران)',Mushir:'🎓 Mushir (مشیر)',Aala_Chanda:'⭐ Aala Chanda',Chanda_Member:'💚 Chanda Member'};
-  var zimmedars = ['Muhtamim','Nazim','Khazanchi','Katib','Nigran','Mushir'];
-  var sorted = state.committee.slice().sort(function(a,b){ return (roleOrder.indexOf(a.role)+99||99)-(roleOrder.indexOf(b.role)+99||99); });
-  var html = ''; var lastType = null;
+function renderComm(){
+  var el=document.getElementById('commList');if(!el)return;
+  if(!S.committee.length){el.innerHTML='<div class="empty"><div class="ei">👥</div><p>Koi member nahi.</p></div>';return;}
+  var sorted=S.committee.slice().sort(function(a,b){
+    var ai=ROLE_ORDER.indexOf(a.role);var bi=ROLE_ORDER.indexOf(b.role);
+    return (ai<0?99:ai)-(bi<0?99:bi);
+  });
+  var html='';var lastType=null;
   sorted.forEach(function(m){
-    var isZ = zimmedars.indexOf(m.role)>=0;
-    var curType = isZ?'z':'c';
+    var isZ=ZIMMEDARS.indexOf(m.role)>=0;
+    var curType=isZ?'z':'c';
     if(curType!==lastType){
-      if(curType==='z') html+='<div style="font-size:11px;font-weight:700;color:#0d2d5a;padding:8px 0 4px;border-bottom:1px solid #d8dce8;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">👑 Zimmedaran — Committee</div>';
-      else html+='<div style="font-size:11px;font-weight:700;color:#1a4a8a;padding:10px 0 4px;border-bottom:1px solid #d8dce8;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">💚 Chanda Dene Wale Members</div>';
+      if(curType==='z')html+='<div style="font-size:11px;font-weight:700;color:#0d2d5a;padding:10px 0 5px;border-bottom:2px solid #0d2d5a;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">👑 Zimmedaran — Committee</div>';
+      else html+='<div style="font-size:11px;font-weight:700;color:#1a4a8a;padding:12px 0 5px;border-bottom:2px solid #1a4a8a;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">💚 Chanda Dene Wale Members</div>';
       lastType=curType;
     }
-    var color=roleColors[m.role]||'#1a4a8a';
-    var label=roleLabels[m.role]||m.role;
-    html+='<div class="comm-card" style="border-left:4px solid '+color+';margin-bottom:8px;">'+
-      '<div class="comm-ico" style="background:'+color+';">'+(isZ?'👤':'💚')+'</div>'+
-      '<div class="comm-info">'+
-        '<div class="comm-name">'+m.name+'</div>'+
-        '<div class="comm-role" style="color:'+color+';font-weight:700;">'+label+(m.phone?' · '+maskPhone(m.phone):'')+'</div>'+
-        (m.note?'<div style="font-size:10.5px;color:#7a8099;">'+m.note+'</div>':'')+
+    var color=ROLE_COLORS[m.role]||'#1a4a8a';
+    var label=ROLE_LABELS[m.role]||m.role;
+    html+='<div class="ccard" style="border-left:4px solid '+color+';">'+
+      '<div class="cico" style="background:'+color+';">'+(isZ?'👤':'💚')+'</div>'+
+      '<div class="cinfo">'+
+        '<div class="cname">'+m.name+'</div>'+
+        '<div class="crole" style="color:'+color+';">'+label+'</div>'+
+        (m.phone?'<div class="cnote">📞 '+mp(m.phone)+'</div>':'')+
+        (m.chanda>0?'<div class="cnote" style="color:#1a6b3a;font-weight:600;">💰 Chanda: ₹'+m.chanda+'</div>':'')+
+        (m.note?'<div class="cnote">'+m.note+'</div>':'')+
       '</div>'+
-      (state.isAdmin?'<button class="comm-del" onclick="deleteComm(\''+m.id+'\')">🗑️</button>':'')+
+      (S.isAdmin?'<button class="cdel" onclick="delComm(\''+m.id+'\')">🗑️</button>':'')+
     '</div>';
   });
-  el.innerHTML = html;
+  el.innerHTML=html;
 }
 
-function deleteComm(id) {
-  if(!confirm('Delete karein?')) return;
-  db.collection('mad_committee').doc(id).delete().then(function(){ showToast('🗑️ Delete ho gaya!'); });
-}
+function delComm(id){if(!confirm('Delete karein?'))return;db.collection('mad_committee').doc(id).delete().then(function(){toast('🗑️ Delete!');});}
 
-// ═══ TEACHERS ═══
-function addTeacher() {
-  var name = document.getElementById('tName').value.trim();
-  var pin = document.getElementById('tPin').value.trim();
-  if(!name||!pin){ showToast('❌ Naam aur PIN zaroori hain!'); return; }
+// TEACHERS
+function addTeacher(){
+  var n=document.getElementById('tName').value.trim();
+  var pin=document.getElementById('tPin').value.trim();
+  if(!n||!pin){toast('❌ Naam aur PIN zaroori!');return;}
   db.collection('mad_teachers').add({
-    name:name, phone:document.getElementById('tPhone').value.trim(),
-    subject:document.getElementById('tSubject').value,
+    name:n,phone:document.getElementById('tPhone').value.trim(),
+    subject:document.getElementById('tSubject').value.trim(),
     salary:parseInt(document.getElementById('tSalary').value)||0,
-    pin:pin, createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    pin:pin,createdAt:firebase.firestore.FieldValue.serverTimestamp()
   }).then(function(){
-    closeModal('addTeacherModal');
-    ['tName','tPhone','tSalary','tPin'].forEach(function(id){document.getElementById(id).value='';});
-    document.getElementById('tSubject').value='';
-    showToast('✅ Teacher add ho gaya!');
+    cm('mAddTeacher');
+    ['tName','tPhone','tSubject','tSalary','tPin'].forEach(function(id){document.getElementById(id).value='';});
+    toast('✅ Teacher add ho gaya!');
   });
 }
 
-function renderTeachers() {
-  var el = document.getElementById('teacherList');
-  if(!el) return;
-  if(!state.teachers.length){ el.innerHTML='<div class="empty-state"><div class="eico">👨‍🏫</div><p>Koi teacher nahi hai.</p></div>'; return; }
-  el.innerHTML = state.teachers.map(function(t){
-    return '<div class="comm-card">'+
-      '<div class="comm-ico" style="background:linear-gradient(135deg,#1a4a8a,#0d2d5a);">👨‍🏫</div>'+
-      '<div class="comm-info">'+
-        '<div class="comm-name">'+t.name+'</div>'+
-        '<div class="comm-role">'+t.subject+(t.phone?' · '+maskPhone(t.phone):'')+'</div>'+
-        (state.isAdmin&&t.salary?'<div style="font-size:11px;color:#1a4a8a;font-weight:600;">Salary: ₹'+t.salary+'/month</div>':'')+
-        (state.isAdmin?'<div style="font-size:10px;color:#7a8099;">PIN: '+t.pin+'</div>':'')+
+function renderTeachers(){
+  var el=document.getElementById('teacherList');if(!el)return;
+  if(!S.teachers.length){el.innerHTML='<div class="empty"><div class="ei">👨‍🏫</div><p>Koi teacher nahi.</p></div>';return;}
+  el.innerHTML=S.teachers.map(function(t){
+    return '<div class="ccard" style="border-left:4px solid #1a4a8a;">'+
+      '<div class="cico" style="background:#1a4a8a;">👨‍🏫</div>'+
+      '<div class="cinfo">'+
+        '<div class="cname">'+t.name+'</div>'+
+        '<div class="crole" style="color:#1a4a8a;">'+(t.subject||'—')+'</div>'+
+        (t.phone?'<div class="cnote">📞 '+mp(t.phone)+'</div>':'')+
+        (S.isAdmin&&t.salary?'<div class="cnote" style="color:#1a6b3a;font-weight:600;">Salary: ₹'+t.salary+'/month</div>':'')+
+        (S.isAdmin?'<div class="cnote">PIN: '+t.pin+'</div>':'')+
       '</div>'+
-      (state.isAdmin?'<button class="comm-del" onclick="deleteTeacher(\''+t.id+'\')">🗑️</button>':'')+
+      (S.isAdmin?'<button class="cdel" onclick="delTeacher(\''+t.id+'\')">🗑️</button>':'')+
     '</div>';
   }).join('');
 }
 
-function deleteTeacher(id) {
-  if(!confirm('Delete karein?')) return;
-  db.collection('mad_teachers').doc(id).delete().then(function(){ showToast('🗑️ Delete ho gaya!'); });
-}
+function delTeacher(id){if(!confirm('Delete karein?'))return;db.collection('mad_teachers').doc(id).delete().then(function(){toast('🗑️ Delete!');});}
 
-// ═══ ANNOUNCEMENTS ═══
-function addAnnouncement() {
-  var title = document.getElementById('annTitle').value.trim();
-  var body = document.getElementById('annBody').value.trim();
-  if(!title||!body){ showToast('❌ Title aur message daalo!'); return; }
+// ANNOUNCEMENTS
+function addAnn(){
+  var t=document.getElementById('annTitle').value.trim();
+  var b=document.getElementById('annBody').value.trim();
+  if(!t||!b){toast('❌ Title aur message daalo!');return;}
   db.collection('mad_announcements').add({
-    title:title, body:body, date:fmtDate(),
+    title:t,body:b,date:S.todayStr,
     createdAt:firebase.firestore.FieldValue.serverTimestamp()
   }).then(function(){
-    closeModal('addAnnModal');
+    cm('mAddAnn');
     document.getElementById('annTitle').value='';
     document.getElementById('annBody').value='';
-    showToast('📢 Notice post ho gaya!');
+    toast('📢 Notice post ho gaya!');
   });
 }
 
-function renderAnnouncements() {
-  var el = document.getElementById('annList');
-  if(!el) return;
-  if(!state.announcements.length){ el.innerHTML='<div class="empty-state"><div class="eico">📢</div><p>Koi notice nahi hai.</p></div>'; return; }
-  el.innerHTML = state.announcements.map(function(a){
-    return '<div class="ann-card">'+
-      (state.isAdmin?'<button class="ann-del" onclick="deleteAnn(\''+a.id+'\')">🗑️</button>':'')+
-      '<div class="ann-title">'+a.title+'</div>'+
-      '<div class="ann-body">'+a.body+'</div>'+
-      '<div class="ann-date">📅 '+a.date+'</div>'+
+function renderAnn(){
+  var el=document.getElementById('annList');if(!el)return;
+  if(!S.announcements.length){el.innerHTML='<div class="empty"><div class="ei">📢</div><p>Koi notice nahi.</p></div>';return;}
+  el.innerHTML=S.announcements.map(function(a){
+    return '<div class="ancard">'+
+      (S.isAdmin?'<button onclick="delAnn(\''+a.id+'\')" style="float:right;background:none;border:none;color:#c0392b;font-size:16px;cursor:pointer;">🗑️</button>':'')+
+      '<div class="antitle">'+a.title+'</div>'+
+      '<div class="anbody">'+a.body+'</div>'+
+      '<div class="andate">📅 '+a.date+'</div>'+
     '</div>';
   }).join('');
 }
 
-function renderHomeAnn() {
-  var el = document.getElementById('homeAnnList');
-  if(!el) return;
-  if(!state.announcements.length){ el.innerHTML='<div class="empty-state"><div class="eico">📢</div><p>Koi notice nahi.</p></div>'; return; }
-  el.innerHTML = state.announcements.slice(0,3).map(function(a){
-    return '<div class="ann-card"><div class="ann-title">'+a.title+'</div><div class="ann-body">'+a.body+'</div><div class="ann-date">📅 '+a.date+'</div></div>';
-  }).join('');
-}
-
-function deleteAnn(id) {
-  if(!confirm('Delete karein?')) return;
-  db.collection('mad_announcements').doc(id).delete().then(function(){ showToast('🗑️ Delete ho gaya!'); });
-}
+function delAnn(id){if(!confirm('Delete karein?'))return;db.collection('mad_announcements').doc(id).delete().then(function(){toast('🗑️ Delete!');});}
 </script>
 </body>
 </html>
